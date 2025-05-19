@@ -1,0 +1,35 @@
+# SQLite Database
+instance/school_data.db
+
+# Python virtual environment
+venv/
+.venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE / Editor specific files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Environment variables file (if you use one)
+.env
+.flaskenv
+
+# Build artifacts or distribution folders
+dist/
+build/
+*.egg-info/
