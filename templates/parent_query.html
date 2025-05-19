@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生成绩查询</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+          /* Theme Colors */
+          .theme-purple-text { color: theme('colors.tsinghua-purple.DEFAULT', #660066); }
+          .bg-theme-purple { background-color: theme('colors.tsinghua-purple.DEFAULT', #660066); }
+          .border-theme-purple { border-color: theme('colors.tsinghua-purple.DEFAULT', #660066); }
+          .hover\:bg-theme-purple-dark:hover { background-color: theme('colors.tsinghua-purple.dark', #520052); }
+          .ring-theme-purple:focus { --tw-ring-color: theme('colors.tsinghua-purple.DEFAULT', #660066); }
+
+          /* Button Spinner Animation */
+          .button-spinner {
+            width: 1.25em; height: 1.25em; border-width: 2px;
+            border-color: currentColor; border-right-color: transparent;
+            border-radius: 50%; display: inline-block; /* Ensure display is set if not hidden */
+            animation: spin 0.75s linear infinite;
+          }
+          @keyframes spin { to { transform: rotate(360deg); } }
+
+          /* Double Underline Style */
+          .double-underline {
+            text-decoration: underline;
+            text-decoration-style: double;
+            text-decoration-color: currentColor; /* Or a specific color */
+             /* Fallback for older browsers (less accurate visually for "double") */
+            /* border-bottom: 3px double currentColor; */
+            /* padding-bottom: 1px; */
+          }
+          /* Ensure hidden class works as expected */
+          .hidden {
+            display: none !important; /* Added !important as a precaution if issue persists, but generally not recommended */
+          }
+        }
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'tsinghua-purple': {
+                DEFAULT: '#660066',
+                dark: '#520052',
+              }
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
+    <header class="bg-tsinghua-purple text-white py-4 px-4 sm:px-6 shadow-md w-full sticky top-0 z-50">
+        <h1 class="text-xl font-semibold text-center">学生期末成绩查询</h1>
+    </header>
+
+    <main class="flex-grow w-full container mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div class="w-full max-w-2xl mx-auto"> <div id="query-section" class="bg-white p-5 sm:p-8 rounded-xl shadow-lg">
+                <form id="query-form" class="space-y-5">
+                    <div>
+                        <label for="student_name_input" class="block text-sm font-medium text-gray-700 mb-1.5">学生姓名</label>
+                        <input type="text" name="student_name" id="student_name_input"
+                               placeholder="请输入学生姓名进行查询"
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-tsinghua-purple focus:ring-1 focus:ring-tsinghua-purple transition-colors">
+                    </div>
+
+                    <div id="common-queries-container" class="hidden pt-1">
+                        <p class="text-xs font-medium text-gray-500 mb-2">最近查过：</p>
+                        <div id="common-names-list" class="flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <div>
+                        <button type="submit" id="query-submit-btn"
+                                class="w-full bg-tsinghua-purple hover:bg-tsinghua-purple-dark text-white font-semibold py-2.5 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tsinghua-purple transition-all duration-150 ease-in-out flex items-center justify-center h-[46px]">
+                            <span id="query-button-text">立即查询</span>
+                            <div id="button-loading-spinner" class="button-spinner ml-2 hidden"></div> </button>
+                    </div>
+                </form>
+                <div id="query-error-message" class="hidden mt-4 p-3 bg-red-50 border-l-4 border-red-400 text-red-700 text-sm rounded-md" role="alert">
+                    <p id="query-error-text"></p>
+                </div>
+            </div>
+
+            <div id="report-card-section" class="hidden mt-8 sm:mt-10">
+                <div id="report-card-content" class="bg-white rounded-xl shadow-xl overflow-hidden">
+                    <div class="bg-tsinghua-purple text-white p-5 sm:p-6 text-center">
+                        <h2 class="text-xl sm:text-2xl font-semibold">期末成绩通知书</h2>
+                        <p class="text-sm opacity-90 mt-1" id="report-term">（学年学期）</p>
+                    </div>
+
+                    <div class="p-5 sm:p-6 text-gray-700 leading-relaxed text-sm sm:text-base">
+                        <div class="mb-6 space-y-3">
+                            <p><strong id="report-student-name-salutation" class="theme-purple-text"></strong> 同学之家长：</p>
+                            <p>您好！</p>
+                            <p>
+                                在您的大力支持和配合下，本学期各项工作已顺利完成。根据教育局通知，我校暑假定于：<span class="double-underline font-semibold">2024年7月6日正式放假</span>，下学期<span class="double-underline font-semibold">2024年8月30日-8月31日开学报到，9月1日正式开学上课</span>。（此部分内容未来可由管理员在后台编辑更新）
+                            </p>
+                            <p>现将本学期贵子女的在校情况及相关事宜通知如下，请家长配合做好孩子在假期间的教育工作。</p>
+                        </div>
+
+                        <h3 class="text-md sm:text-lg font-semibold text-tsinghua-purple mb-2.5">各科目成绩：</h3>
+                        <div class="overflow-x-auto mb-5">
+                            <table class="w-full min-w-[300px] border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50">
+                                        <th class="border border-gray-300 p-2.5 text-left font-medium text-gray-600">科目</th>
+                                        <th class="border border-gray-300 p-2.5 text-center font-medium text-gray-600">分数</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scores-table-body"></tbody>
+                            </table>
+                        </div>
+
+                        <h3 class="text-md sm:text-lg font-semibold text-tsinghua-purple mb-2.5">期末评语：</h3>
+                        <div id="display-final-remarks" class="p-3.5 border border-gray-200 bg-purple-50 rounded-md min-h-[60px]">
+                        </div>
+
+                        <div class="text-xs text-gray-400 text-right mt-8">
+                            报告生成于：<span id="report-generated-time"></span>
+                        </div>
+                    </div>
+                     <div class="p-5 sm:p-6 border-t border-gray-200 text-center">
+                        <button type="button" id="return-to-query-btn"
+                                class="bg-gray-100 hover:bg-gray-200 text-tsinghua-purple border border-tsinghua-purple font-semibold py-2 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-tsinghua-purple transition-colors duration-150 ease-in-out">
+                            返回重新查询
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center py-5 mt-auto text-xs text-gray-500 w-full">
+        &copy; <span id="current-year"></span> 学生成绩查询系统・清华紫主题演示
+    </footer>
+
+    <script>
+        // --- Configuration ---
+        const MAX_COMMON_NAMES = 3;
+        const COMMON_NAMES_STORAGE_KEY = 'commonStudentNames';
+        const LAST_SEARCHED_NAME_KEY = 'lastSearchedStudentName';
+
+        // --- DOM Elements ---
+        const querySection = document.getElementById('query-section');
+        const reportCardSection = document.getElementById('report-card-section');
+        const queryForm = document.getElementById('query-form');
+        const studentNameInput = document.getElementById('student_name_input');
+        const querySubmitBtn = document.getElementById('query-submit-btn');
+        const queryButtonText = document.getElementById('query-button-text');
+        const buttonLoadingSpinner = document.getElementById('button-loading-spinner');
+        const commonQueriesContainer = document.getElementById('common-queries-container');
+        const commonNamesListDiv = document.getElementById('common-names-list');
+        const queryErrorMessageDiv = document.getElementById('query-error-message');
+        const queryErrorTextP = document.getElementById('query-error-text');
+        const reportCardContent = document.getElementById('report-card-content');
+        const returnToQueryBtn = document.getElementById('return-to-query-btn');
+        const reportStudentNameSalutationEl = document.getElementById('report-student-name-salutation'); // Corrected variable name
+
+        // --- UI State Management ---
+        function showQueryForm() {
+            querySection.classList.remove('hidden');
+            reportCardSection.classList.add('hidden');
+            queryErrorMessageDiv.classList.add('hidden'); // Hide error on form show
+            studentNameInput.value = localStorage.getItem(LAST_SEARCHED_NAME_KEY) || '';
+            loadCommonNames();
+        }
+
+        function showReportCardView() {
+            querySection.classList.add('hidden');
+            reportCardSection.classList.remove('hidden');
+            queryErrorMessageDiv.classList.add('hidden'); // Hide error when showing card
+        }
+
+        function startButtonLoading() {
+            if (!querySubmitBtn || !queryButtonText || !buttonLoadingSpinner) return;
+            querySubmitBtn.disabled = true;
+            queryButtonText.textContent = '查询中...';
+            buttonLoadingSpinner.classList.remove('hidden');
+        }
+
+        function stopButtonLoading() {
+            if (!querySubmitBtn || !queryButtonText || !buttonLoadingSpinner) return;
+            querySubmitBtn.disabled = false;
+            queryButtonText.textContent = '立即查询';
+            buttonLoadingSpinner.classList.add('hidden');
+        }
+
+        function displayQueryError(message) {
+            // stopButtonLoading(); // No longer called here, handled by finally block
+            if (!queryErrorTextP || !queryErrorMessageDiv) return;
+            queryErrorTextP.textContent = message || '查询失败，请检查输入或稍后再试。';
+            queryErrorMessageDiv.classList.remove('hidden');
+
+            // Ensure query form is visible to show error if report card was active
+            if (reportCardSection && !reportCardSection.classList.contains('hidden')) {
+                reportCardSection.classList.add('hidden');
+            }
+            if (querySection && querySection.classList.contains('hidden')) {
+                 querySection.classList.remove('hidden');
+            }
+        }
+
+        function populateReportCard_v2(data) {
+            if (reportStudentNameSalutationEl) {
+                 reportStudentNameSalutationEl.textContent = data.student_name || '____';
+            } else {
+                console.warn('Element with ID "report-student-name-salutation" not found.');
+            }
+
+            // Handle announcement_html if backend provides it, otherwise use static content
+            // This part was discussed in previous responses; assuming data.announcement_html is used if present
+            // or student name is filled into a static template.
+            // For now, keeping the salutation update as above.
+
+            document.getElementById('report-term').textContent = data.term || `（${new Date().getFullYear()} 学年）`;
+
+            const scoresTableBody = document.getElementById('scores-table-body');
+            scoresTableBody.innerHTML = '';
+
+            const scores = {
+                '语文': data.chinese_score,
+                '数学': data.math_score,
+                '英语': data.english_score
+            };
+            let hasScores = false;
+            for (const subject in scores) {
+                if (scores[subject] !== undefined && scores[subject] !== null) {
+                    hasScores = true;
+                    const row = `<tr>
+                                    <td class="border border-gray-300 p-2.5">${subject}</td>
+                                    <td class="border border-gray-300 p-2.5 text-center font-semibold">${scores[subject]}</td>
+                                 </tr>`;
+                    scoresTableBody.innerHTML += row;
+                }
+            }
+            if (!hasScores) {
+                 scoresTableBody.innerHTML = '<tr><td colspan="2" class="border border-gray-300 p-2.5 text-center text-gray-500">暂无科目成绩</td></tr>';
+            }
+
+            document.getElementById('display-final-remarks').innerHTML = data.final_remarks ? data.final_remarks.replace(/\n/g, '<br>') : '无评语';
+            document.getElementById('report-generated-time').textContent = new Date().toLocaleDateString();
+
+            showReportCardView();
+        }
+
+        function loadLastSearchedName() {
+            const lastSearched = localStorage.getItem(LAST_SEARCHED_NAME_KEY);
+            if (lastSearched && studentNameInput) studentNameInput.value = lastSearched;
+        }
+
+        function saveLastSearchedName(name) {
+            if(name) localStorage.setItem(LAST_SEARCHED_NAME_KEY, name);
+        }
+
+        function loadCommonNames() {
+            if (!commonNamesListDiv || !commonQueriesContainer) return;
+            const commonNamesStr = localStorage.getItem(COMMON_NAMES_STORAGE_KEY);
+            const commonNames = commonNamesStr ? JSON.parse(commonNamesStr) : [];
+            commonNamesListDiv.innerHTML = '';
+
+            if (commonNames.length > 0) {
+                commonQueriesContainer.classList.remove('hidden');
+                commonNames.forEach(name => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'common-name-btn bg-purple-50 hover:bg-purple-100 text-tsinghua-purple text-xs sm:text-sm py-1 px-2.5 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-tsinghua-purple';
+                    btn.textContent = name;
+                    btn.onclick = () => {
+                        if (studentNameInput) studentNameInput.value = name;
+                        if (queryForm && typeof queryForm.requestSubmit === 'function') { // Modern browsers
+                            queryForm.requestSubmit();
+                        } else if (queryForm) { // Fallback for older browsers
+                            queryForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                        }
+                    };
+                    commonNamesListDiv.appendChild(btn);
+                });
+            } else {
+                 commonQueriesContainer.classList.add('hidden');
+            }
+        }
+
+        function addNameToCommon(name) {
+            if (!name) return;
+            let commonNames = JSON.parse(localStorage.getItem(COMMON_NAMES_STORAGE_KEY) || '[]');
+            commonNames = commonNames.filter(n => n !== name);
+            commonNames.unshift(name);
+            if (commonNames.length > MAX_COMMON_NAMES) commonNames = commonNames.slice(0, MAX_COMMON_NAMES);
+            localStorage.setItem(COMMON_NAMES_STORAGE_KEY, JSON.stringify(commonNames));
+        }
+
+        // --- Event Listener for Form Submission (Corrected and Final) ---
+        if (queryForm) {
+            queryForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                console.log("Form submitted. Preventing default.");
+
+                const studentName = studentNameInput ? studentNameInput.value.trim() : "";
+                console.log("Student name input:", studentName);
+
+                if (queryErrorMessageDiv) queryErrorMessageDiv.classList.add('hidden');
+
+                if (!studentName) {
+                    console.log("Student name is empty.");
+                    displayQueryError('请输入学生姓名进行查询。'); // This will now NOT call stopButtonLoading
+                    if (studentNameInput) studentNameInput.focus();
+                    stopButtonLoading(); // Call it here explicitly as displayQueryError no longer does
+                    return;
+                }
+
+                console.log("Starting button loading state...");
+                startButtonLoading();
+
+                try {
+                    console.log(`Attempting to fetch: /api/get_report?name=${encodeURIComponent(studentName)}`);
+                    const response = await fetch(`/api/get_report?name=${encodeURIComponent(studentName)}`);
+                    console.log("Fetch response received:", response);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log("Data from API:", data);
+                        populateReportCard_v2(data);
+                        if (window.saveLastSearchedName) saveLastSearchedName(studentName);
+                        if (window.addNameToCommon) addNameToCommon(studentName);
+                    } else {
+                        const errorData = await response.json().catch(() => ({ error: '无法解析错误信息。' }));
+                        console.log("Error data from API:", errorData);
+                        let errorMessage = errorData.error || `查询失败，服务器状态码: ${response.status}`;
+                        if (response.status === 404) {
+                            errorMessage = `未找到姓名为 "${studentName}" 的学生成绩信息。请检查姓名是否正确。`;
+                        }
+                        displayQueryError(errorMessage);
+                    }
+                } catch (error) {
+                    console.error('Query fetch error:', error);
+                    displayQueryError('查询服务暂时不可用或发生网络错误，请稍后再试。');
+                } finally {
+                    console.log("Stopping button loading state in finally block.");
+                    stopButtonLoading();
+                }
+            });
+        } else {
+            console.error("The query form (ID: 'query-form') was not found in the DOM. API calls will not be made.");
+        }
+
+        if (returnToQueryBtn) {
+            returnToQueryBtn.addEventListener('click', () => { showQueryForm(); });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showQueryForm();
+            loadLastSearchedName();
+            const currentYearEl = document.getElementById('current-year');
+            if (currentYearEl) currentYearEl.textContent = new Date().getFullYear();
+        });
+    </script>
+</body>
+</html>

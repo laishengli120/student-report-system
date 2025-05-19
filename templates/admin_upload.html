@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员上传成绩</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+          .theme-purple {
+            --tw-text-opacity: 1;
+            color: theme('colors.tsinghua-purple.DEFAULT', #660066); /* Fallback */
+          }
+          .bg-theme-purple {
+            --tw-bg-opacity: 1;
+            background-color: theme('colors.tsinghua-purple.DEFAULT', #660066); /* Fallback */
+          }
+          .border-theme-purple {
+            --tw-border-opacity: 1;
+            border-color: theme('colors.tsinghua-purple.DEFAULT', #660066); /* Fallback */
+          }
+          .hover\:bg-theme-purple-dark:hover {
+            background-color: theme('colors.tsinghua-purple.dark', #520052); /* Darker shade for hover */
+          }
+        }
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+
+        /* Define Tsinghua Purple for Tailwind */
+        @layer base {
+          :root {
+            --color-tsinghua-purple-DEFAULT: #660066;
+            --color-tsinghua-purple-dark: #520052; /* Slightly darker for hover states */
+          }
+        }
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'tsinghua-purple': {
+                DEFAULT: '#660066',
+                dark: '#520052',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+        .alert-success {
+            background-color: #d1fae5; /* Tailwind green-100 equivalent */
+            color: #065f46; /* Tailwind green-800 equivalent */
+            border-color: #6ee7b7; /* Tailwind green-300 equivalent */
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+        }
+        .alert-error {
+            background-color: #fee2e2; /* Tailwind red-100 equivalent */
+            color: #991b1b; /* Tailwind red-800 equivalent */
+            border-color: #fca5a5; /* Tailwind red-300 equivalent */
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+        }
+        .alert-info { /* A generic info style, if no category is passed */
+            background-color: #e0f2fe; /* Tailwind lightBlue-100 / sky-100 */
+            color: #075985; /* Tailwind lightBlue-800 / sky-800 */
+            border-color: #7dd3fc; /* Tailwind lightBlue-300 / sky-300 */
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.375rem; /* Tailwind rounded-md */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-6 sm:p-8 rounded-md shadow w-full max-w-lg">
+        <h1 class="text-xl sm:text-2xl font-semibold text-center text-tsinghua-purple mb-6">
+            上传学生成绩 (Excel)
+        </h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              {# Use 'error' for errors, 'success' for success, default to 'info' #}
+              <div class="alert-{{ category|lower if category in ['success', 'error'] else 'info' }}" role="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <div id="message-area" class="mt-4 text-center text-sm">
+            </div>
+
+        <form action="{{ url_for('admin_upload_page') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
+            <div>
+                <label for="excel_file" class="sr-only">选择 Excel 文件：</label>
+                <input type="file" name="excel_file" id="excel_file" required
+                       class="block w-full text-sm text-gray-700 border border-gray-300 rounded-md cursor-pointer
+                              file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium
+                              file:bg-tsinghua-purple file:text-white hover:file:bg-tsinghua-purple-dark
+                              focus:outline-none focus:ring-2 focus:ring-tsinghua-purple focus:border-transparent">
+                <p class="mt-2 text-xs text-gray-500">
+                    文件格式：.xlsx, .xls。首行为表头 (姓名, 语文, 数学, 英语, 期末评语等)。
+                </p>
+            </div>
+
+            <div>
+                <button type="submit"
+                        class="w-full bg-tsinghua-purple hover:bg-tsinghua-purple-dark text-white font-medium py-2.5 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tsinghua-purple transition duration-150 ease-in-out">
+                    上传文件
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
