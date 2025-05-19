@@ -12,33 +12,24 @@
     <style type="text/tailwindcss">
         @layer utilities {
           /* Theme Colors */
-          .theme-purple-text { color: theme('colors.tsinghua-purple.DEFAULT', #660066); }
-          .bg-theme-purple { background-color: theme('colors.tsinghua-purple.DEFAULT', #660066); }
-          .border-theme-purple { border-color: theme('colors.tsinghua-purple.DEFAULT', #660066); }
-          .hover\:bg-theme-purple-dark:hover { background-color: theme('colors.tsinghua-purple.dark', #520052); }
-          .ring-theme-purple:focus { --tw-ring-color: theme('colors.tsinghua-purple.DEFAULT', #660066); }
+          .theme-purple-text { color: theme('colors.tsinghua-purple.DEFAULT'); }
+          .bg-theme-purple { background-color: theme('colors.tsinghua-purple.DEFAULT'); }
+          .border-theme-purple { border-color: theme('colors.tsinghua-purple.DEFAULT'); }
+          .hover\:bg-theme-purple-dark:hover { background-color: theme('colors.tsinghua-purple.dark'); }
+          .ring-theme-purple:focus { --tw-ring-color: theme('colors.tsinghua-purple.DEFAULT'); }
 
           /* Button Spinner Animation */
           .button-spinner {
             width: 1.25em; height: 1.25em; border-width: 2px;
             border-color: currentColor; border-right-color: transparent;
-            border-radius: 50%; display: inline-block; /* Ensure display is set if not hidden */
+            border-radius: 50%;
             animation: spin 0.75s linear infinite;
           }
           @keyframes spin { to { transform: rotate(360deg); } }
 
-          /* Double Underline Style */
-          .double-underline {
-            text-decoration: underline;
-            text-decoration-style: double;
-            text-decoration-color: currentColor; /* Or a specific color */
-             /* Fallback for older browsers (less accurate visually for "double") */
-            /* border-bottom: 3px double currentColor; */
-            /* padding-bottom: 1px; */
-          }
-          /* Ensure hidden class works as expected */
-          .hidden {
-            display: none !important; /* Added !important as a precaution if issue persists, but generally not recommended */
+          /* Subtle background pattern */
+          .bg-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23e5e7eb' fill-opacity='0.4'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414zM41.95 14.536l8.484 8.484-1.414 1.414-8.484-8.484 1.414-1.414zM10 16c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
           }
         }
         @tailwind base;
@@ -49,10 +40,15 @@
       tailwind.config = {
         theme: {
           extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
             colors: {
               'tsinghua-purple': {
-                DEFAULT: '#660066',
-                dark: '#520052',
+                DEFAULT: '#660066', // Tsinghua Purple
+                dark: '#520052', // A darker shade
+                light: '#f0e6f0', // A very light shade for backgrounds/accents
+                lighter: '#f9f5f9' // An even lighter shade for subtle backgrounds
               }
             }
           }
@@ -60,79 +56,107 @@
       }
     </script>
 </head>
-<body class="bg-gray-100 text-gray-800 min-h-screen flex flex-col">
-    <header class="bg-tsinghua-purple text-white py-4 px-4 sm:px-6 shadow-md w-full sticky top-0 z-50">
-        <h1 class="text-xl font-semibold text-center">学生期末成绩查询</h1>
-    </header>
+<body class="bg-gray-100 bg-pattern text-gray-800 min-h-screen flex flex-col font-sans">
+    <main class="flex-grow w-full container mx-auto px-4 sm:px-6 py-10 sm:py-12">
+        <div class="w-full max-w-2xl mx-auto">
+            <div id="query-section" class="bg-white p-6 sm:p-10 rounded-xl shadow-2xl transition-all duration-500 ease-in-out">
+                <div class="text-center mb-8 sm:mb-10">
+                    <svg class="w-16 h-16 text-tsinghua-purple mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+                    </svg>
+                    <h1 class="text-3xl sm:text-4xl font-bold theme-purple-text mb-2">学生期末成绩查询</h1>
+                    <p class="text-sm sm:text-md text-gray-500">轻松洞悉学业进展，输入姓名即刻开启。</p>
+                </div>
 
-    <main class="flex-grow w-full container mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <div class="w-full max-w-2xl mx-auto"> <div id="query-section" class="bg-white p-5 sm:p-8 rounded-xl shadow-lg">
-                <form id="query-form" class="space-y-5">
+                <form id="query-form" class="space-y-6">
                     <div>
-                        <label for="student_name_input" class="block text-sm font-medium text-gray-700 mb-1.5">学生姓名</label>
-                        <input type="text" name="student_name" id="student_name_input"
-                               placeholder="请输入学生姓名进行查询"
-                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-tsinghua-purple focus:ring-1 focus:ring-tsinghua-purple transition-colors">
+                        <label for="student_name_input" class="block text-sm font-medium text-gray-700 mb-1.5 sr-only">学生姓名</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <input type="text" name="student_name" id="student_name_input"
+                                   placeholder="请输入学生姓名开始查询..."
+                                   class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-tsinghua-purple focus:ring-2 focus:ring-tsinghua-purple/50 transition-all duration-150 ease-in-out shadow-sm hover:shadow-md text-base">
+                        </div>
                     </div>
 
-                    <div id="common-queries-container" class="hidden pt-1">
-                        <p class="text-xs font-medium text-gray-500 mb-2">最近查过：</p>
-                        <div id="common-names-list" class="flex flex-wrap gap-2"></div>
+                    <div id="common-queries-container" class="hidden pt-2">
+                        <p class="text-xs font-medium text-gray-500 mb-2.5 text-center">或选择最近查过的:</p>
+                        <div id="common-names-list" class="flex flex-wrap gap-2 justify-center"></div>
                     </div>
 
                     <div>
                         <button type="submit" id="query-submit-btn"
-                                class="w-full bg-tsinghua-purple hover:bg-tsinghua-purple-dark text-white font-semibold py-2.5 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tsinghua-purple transition-all duration-150 ease-in-out flex items-center justify-center h-[46px]">
+                                class="w-full bg-tsinghua-purple hover:bg-tsinghua-purple-dark text-white font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-4 focus:ring-tsinghua-purple/30 transition-all duration-150 ease-in-out flex items-center justify-center h-[50px] shadow-md hover:shadow-lg transform hover:scale-105 text-base">
                             <span id="query-button-text">立即查询</span>
-                            <div id="button-loading-spinner" class="button-spinner ml-2 hidden"></div> </button>
+                            <div id="button-loading-spinner" class="button-spinner ml-2 hidden"></div>
+                        </button>
                     </div>
                 </form>
-                <div id="query-error-message" class="hidden mt-4 p-3 bg-red-50 border-l-4 border-red-400 text-red-700 text-sm rounded-md" role="alert">
-                    <p id="query-error-text"></p>
+
+                <div id="query-error-message" class="hidden mt-6 p-3.5 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded-md shadow" role="alert">
+                    <div class="flex">
+                        <div class="py-1">
+                            <svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zM11.414 10l2.829-2.828a1 1 0 1 0-1.414-1.414L10 8.586 7.172 5.757a1 1 0 0 0-1.414 1.414L8.586 10l-2.829 2.828a1 1 0 1 0 1.414 1.414L10 11.414l2.828 2.829a1 1 0 0 0 1.414-1.414L11.414 10z"/></svg>
+                        </div>
+                        <div>
+                            <p class="font-bold">查询出错</p>
+                            <p id="query-error-text" class="text-sm"></p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div id="report-card-section" class="hidden mt-8 sm:mt-10">
-                <div id="report-card-content" class="bg-white rounded-xl shadow-xl overflow-hidden">
-                    <div class="bg-tsinghua-purple text-white p-5 sm:p-6 text-center">
+                <div id="report-card-content" class="bg-white rounded-xl shadow-2xl overflow-hidden transition-all duration-500 ease-in-out">
+                    <div class="bg-tsinghua-purple text-white p-5 sm:p-7 text-center relative">
+                        <div class="absolute top-3 left-3 sm:top-4 sm:left-4 opacity-30">
+                             <svg class="w-8 h-8 sm:w-10 sm:h-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+                            </svg>
+                        </div>
                         <h2 class="text-xl sm:text-2xl font-semibold">期末成绩通知书</h2>
-                        <p class="text-sm opacity-90 mt-1" id="report-term">（学年学期）</p>
+                        <p class="text-xs sm:text-sm opacity-90 mt-1.5" id="report-term">（学年学期）</p>
                     </div>
 
-                    <div class="p-5 sm:p-6 text-gray-700 leading-relaxed text-sm sm:text-base">
-                        <div class="mb-6 space-y-3">
-                            <p><strong id="report-student-name-salutation" class="theme-purple-text"></strong> 同学之家长：</p>
+                    <div class="p-5 sm:p-7 text-gray-700 leading-relaxed text-sm">
+                        <div class="mb-7 space-y-3.5">
+                            <p><strong id="report-student-name-salutation" class="theme-purple-text text-base sm:text-lg"></strong> 同学家长：</p>
                             <p>您好！</p>
-                            <p>
-                                在您的大力支持和配合下，本学期各项工作已顺利完成。根据教育局通知，我校暑假定于：<span class="double-underline font-semibold">2024年7月6日正式放假</span>，下学期<span class="double-underline font-semibold">2024年8月30日-8月31日开学报到，9月1日正式开学上课</span>。（此部分内容未来可由管理员在后台编辑更新）
+                            <p class="text-xs sm:text-sm">
+                                在您的大力支持和配合下，本学期各项工作已顺利完成。根据教育局通知，我校暑假定于 <strong class="theme-purple-text font-semibold">2024年7月6日正式放假</strong>，下学期 <strong class="theme-purple-text font-semibold">2024年8月30日-8月31日开学报到，9月1日正式开学上课</strong>。（此部分内容未来可由管理员在后台编辑更新）
                             </p>
-                            <p>现将本学期贵子女的在校情况及相关事宜通知如下，请家长配合做好孩子在假期间的教育工作。</p>
+                            <p class="text-xs sm:text-sm">现将本学期贵子女的在校情况及相关事宜通知如下，请家长配合做好孩子在假期间的教育工作。</p>
                         </div>
 
-                        <h3 class="text-md sm:text-lg font-semibold text-tsinghua-purple mb-2.5">各科目成绩：</h3>
-                        <div class="overflow-x-auto mb-5">
-                            <table class="w-full min-w-[300px] border-collapse">
-                                <thead>
-                                    <tr class="bg-gray-50">
-                                        <th class="border border-gray-300 p-2.5 text-left font-medium text-gray-600">科目</th>
-                                        <th class="border border-gray-300 p-2.5 text-center font-medium text-gray-600">分数</th>
+                        <h3 class="text-base sm:text-lg font-semibold theme-purple-text mb-2.5">各科目成绩：</h3>
+                        <div class="overflow-x-auto mb-5 shadow rounded-lg border border-gray-200/80">
+                            <table class="w-full min-w-[280px]">
+                                <thead class="bg-tsinghua-purple/20">
+                                    <tr>
+                                        <th class="py-2.5 px-2 sm:py-3 sm:px-3 text-left font-semibold theme-purple-text text-xs sm:text-sm">科目</th>
+                                        <th class="py-2.5 px-2 sm:py-3 sm:px-3 text-center font-semibold theme-purple-text text-xs sm:text-sm">分数</th>
                                     </tr>
                                 </thead>
-                                <tbody id="scores-table-body"></tbody>
+                                <tbody id="scores-table-body" class="divide-y divide-gray-200">
+                                    </tbody>
                             </table>
                         </div>
 
-                        <h3 class="text-md sm:text-lg font-semibold text-tsinghua-purple mb-2.5">期末评语：</h3>
-                        <div id="display-final-remarks" class="p-3.5 border border-gray-200 bg-purple-50 rounded-md min-h-[60px]">
+                        <h3 class="text-base sm:text-lg font-semibold theme-purple-text mb-2.5">期末评语：</h3>
+                        <div id="display-final-remarks" class="p-4 sm:p-5 border-2 border-tsinghua-purple/30 bg-tsinghua-purple/10 rounded-lg min-h-[90px] text-gray-700 italic leading-relaxed shadow-inner text-sm sm:text-base">
                         </div>
 
-                        <div class="text-xs text-gray-400 text-right mt-8">
+                        <div class="text-xs text-gray-400 text-right mt-8 sm:mt-10">
                             报告生成于：<span id="report-generated-time"></span>
                         </div>
                     </div>
-                     <div class="p-5 sm:p-6 border-t border-gray-200 text-center">
+                     <div class="p-5 sm:p-7 border-t border-gray-200 text-center bg-gray-50 rounded-b-xl">
                         <button type="button" id="return-to-query-btn"
-                                class="bg-gray-100 hover:bg-gray-200 text-tsinghua-purple border border-tsinghua-purple font-semibold py-2 px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-tsinghua-purple transition-colors duration-150 ease-in-out">
+                                class="bg-white hover:bg-gray-100 text-tsinghua-purple border border-tsinghua-purple font-semibold py-2 px-5 sm:py-2.5 sm:px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tsinghua-purple/50 transition-all duration-150 ease-in-out shadow-sm hover:shadow-md text-sm sm:text-base">
                             返回重新查询
                         </button>
                     </div>
@@ -141,8 +165,8 @@
         </div>
     </main>
 
-    <footer class="text-center py-5 mt-auto text-xs text-gray-500 w-full">
-        &copy; <span id="current-year"></span> 学生成绩查询系统・清华紫主题演示
+    <footer class="text-center py-5 sm:py-6 mt-auto text-xs text-gray-500 w-full">
+        &copy; <span id="current-year"></span> 学生成绩查询系统・清华紫主题・V2.1 Design
     </footer>
 
     <script>
@@ -163,23 +187,24 @@
         const commonNamesListDiv = document.getElementById('common-names-list');
         const queryErrorMessageDiv = document.getElementById('query-error-message');
         const queryErrorTextP = document.getElementById('query-error-text');
-        const reportCardContent = document.getElementById('report-card-content');
         const returnToQueryBtn = document.getElementById('return-to-query-btn');
-        const reportStudentNameSalutationEl = document.getElementById('report-student-name-salutation'); // Corrected variable name
+        const reportStudentNameSalutationEl = document.getElementById('report-student-name-salutation');
 
         // --- UI State Management ---
         function showQueryForm() {
             querySection.classList.remove('hidden');
             reportCardSection.classList.add('hidden');
-            queryErrorMessageDiv.classList.add('hidden'); // Hide error on form show
+            queryErrorMessageDiv.classList.add('hidden');
             studentNameInput.value = localStorage.getItem(LAST_SEARCHED_NAME_KEY) || '';
+            studentNameInput.focus();
             loadCommonNames();
         }
 
         function showReportCardView() {
             querySection.classList.add('hidden');
             reportCardSection.classList.remove('hidden');
-            queryErrorMessageDiv.classList.add('hidden'); // Hide error when showing card
+            queryErrorMessageDiv.classList.add('hidden');
+            window.scrollTo(0, 0);
         }
 
         function startButtonLoading() {
@@ -187,6 +212,7 @@
             querySubmitBtn.disabled = true;
             queryButtonText.textContent = '查询中...';
             buttonLoadingSpinner.classList.remove('hidden');
+            querySubmitBtn.classList.add('opacity-75', 'cursor-not-allowed');
         }
 
         function stopButtonLoading() {
@@ -194,15 +220,22 @@
             querySubmitBtn.disabled = false;
             queryButtonText.textContent = '立即查询';
             buttonLoadingSpinner.classList.add('hidden');
+            querySubmitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
         }
 
         function displayQueryError(message) {
-            // stopButtonLoading(); // No longer called here, handled by finally block
             if (!queryErrorTextP || !queryErrorMessageDiv) return;
             queryErrorTextP.textContent = message || '查询失败，请检查输入或稍后再试。';
             queryErrorMessageDiv.classList.remove('hidden');
+            // Animation for error message
+            queryErrorMessageDiv.style.opacity = '0';
+            queryErrorMessageDiv.style.transform = 'translateY(0.5rem)';
+            requestAnimationFrame(() => {
+                queryErrorMessageDiv.style.transition = 'opacity 300ms ease-out, transform 300ms ease-out';
+                queryErrorMessageDiv.style.opacity = '1';
+                queryErrorMessageDiv.style.transform = 'translateY(0)';
+            });
 
-            // Ensure query form is visible to show error if report card was active
             if (reportCardSection && !reportCardSection.classList.contains('hidden')) {
                 reportCardSection.classList.add('hidden');
             }
@@ -214,42 +247,36 @@
         function populateReportCard_v2(data) {
             if (reportStudentNameSalutationEl) {
                  reportStudentNameSalutationEl.textContent = data.student_name || '____';
-            } else {
-                console.warn('Element with ID "report-student-name-salutation" not found.');
             }
-
-            // Handle announcement_html if backend provides it, otherwise use static content
-            // This part was discussed in previous responses; assuming data.announcement_html is used if present
-            // or student name is filled into a static template.
-            // For now, keeping the salutation update as above.
 
             document.getElementById('report-term').textContent = data.term || `（${new Date().getFullYear()} 学年）`;
 
             const scoresTableBody = document.getElementById('scores-table-body');
-            scoresTableBody.innerHTML = '';
+            scoresTableBody.innerHTML = ''; 
 
             const scores = {
                 '语文': data.chinese_score,
                 '数学': data.math_score,
-                '英语': data.english_score
+                '英语': data.english_score,
             };
             let hasScores = false;
             for (const subject in scores) {
                 if (scores[subject] !== undefined && scores[subject] !== null) {
                     hasScores = true;
-                    const row = `<tr>
-                                    <td class="border border-gray-300 p-2.5">${subject}</td>
-                                    <td class="border border-gray-300 p-2.5 text-center font-semibold">${scores[subject]}</td>
+                    // Adjusted classes for mobile score prominence
+                    const row = `<tr class="hover:bg-tsinghua-purple/5 transition-colors duration-150">
+                                    <td class="py-3 px-2 sm:p-3 text-gray-700 text-sm sm:text-base">${subject}</td>
+                                    <td class="py-3 px-2 sm:p-3 text-center font-bold theme-purple-text text-base sm:text-lg">${scores[subject]}</td>
                                  </tr>`;
                     scoresTableBody.innerHTML += row;
                 }
             }
             if (!hasScores) {
-                 scoresTableBody.innerHTML = '<tr><td colspan="2" class="border border-gray-300 p-2.5 text-center text-gray-500">暂无科目成绩</td></tr>';
+                 scoresTableBody.innerHTML = '<tr><td colspan="2" class="py-3 px-2 sm:p-3 text-center text-gray-500 text-sm sm:text-base">暂无科目成绩信息。</td></tr>';
             }
 
-            document.getElementById('display-final-remarks').innerHTML = data.final_remarks ? data.final_remarks.replace(/\n/g, '<br>') : '无评语';
-            document.getElementById('report-generated-time').textContent = new Date().toLocaleDateString();
+            document.getElementById('display-final-remarks').innerHTML = data.final_remarks ? data.final_remarks.replace(/\n/g, '<br>') : '<span class="text-gray-500">暂无期末评语。</span>';
+            document.getElementById('report-generated-time').textContent = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
 
             showReportCardView();
         }
@@ -267,21 +294,22 @@
             if (!commonNamesListDiv || !commonQueriesContainer) return;
             const commonNamesStr = localStorage.getItem(COMMON_NAMES_STORAGE_KEY);
             const commonNames = commonNamesStr ? JSON.parse(commonNamesStr) : [];
-            commonNamesListDiv.innerHTML = '';
+            commonNamesListDiv.innerHTML = ''; 
 
             if (commonNames.length > 0) {
                 commonQueriesContainer.classList.remove('hidden');
                 commonNames.forEach(name => {
                     const btn = document.createElement('button');
                     btn.type = 'button';
-                    btn.className = 'common-name-btn bg-purple-50 hover:bg-purple-100 text-tsinghua-purple text-xs sm:text-sm py-1 px-2.5 rounded-full transition-colors focus:outline-none focus:ring-1 focus:ring-tsinghua-purple';
+                    btn.className = 'common-name-btn bg-tsinghua-purple/10 hover:bg-tsinghua-purple/20 text-tsinghua-purple text-xs sm:text-sm py-1.5 px-3 rounded-full transition-all duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-tsinghua-purple/50';
                     btn.textContent = name;
                     btn.onclick = () => {
                         if (studentNameInput) studentNameInput.value = name;
-                        if (queryForm && typeof queryForm.requestSubmit === 'function') { // Modern browsers
-                            queryForm.requestSubmit();
-                        } else if (queryForm) { // Fallback for older browsers
-                            queryForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                        if (queryForm && typeof queryForm.requestSubmit === 'function') {
+                            queryForm.requestSubmit(querySubmitBtn);
+                        } else if (queryForm) {
+                            const submitEvent = new Event('submit', { cancelable: true, bubbles: true });
+                            queryForm.dispatchEvent(submitEvent);
                         }
                     };
                     commonNamesListDiv.appendChild(btn);
@@ -294,64 +322,56 @@
         function addNameToCommon(name) {
             if (!name) return;
             let commonNames = JSON.parse(localStorage.getItem(COMMON_NAMES_STORAGE_KEY) || '[]');
-            commonNames = commonNames.filter(n => n !== name);
-            commonNames.unshift(name);
+            commonNames = commonNames.filter(n => n !== name); 
+            commonNames.unshift(name); 
             if (commonNames.length > MAX_COMMON_NAMES) commonNames = commonNames.slice(0, MAX_COMMON_NAMES);
             localStorage.setItem(COMMON_NAMES_STORAGE_KEY, JSON.stringify(commonNames));
         }
 
-        // --- Event Listener for Form Submission (Corrected and Final) ---
         if (queryForm) {
             queryForm.addEventListener('submit', async function(event) {
                 event.preventDefault();
-                console.log("Form submitted. Preventing default.");
-
                 const studentName = studentNameInput ? studentNameInput.value.trim() : "";
-                console.log("Student name input:", studentName);
 
-                if (queryErrorMessageDiv) queryErrorMessageDiv.classList.add('hidden');
+                if (queryErrorMessageDiv && !queryErrorMessageDiv.classList.contains('hidden')) {
+                    queryErrorMessageDiv.classList.add('hidden');
+                     queryErrorMessageDiv.style.opacity = '0'; // Reset for next animation
+                }
 
                 if (!studentName) {
-                    console.log("Student name is empty.");
-                    displayQueryError('请输入学生姓名进行查询。'); // This will now NOT call stopButtonLoading
+                    displayQueryError('请输入学生姓名进行查询。');
                     if (studentNameInput) studentNameInput.focus();
-                    stopButtonLoading(); // Call it here explicitly as displayQueryError no longer does
                     return;
                 }
 
-                console.log("Starting button loading state...");
                 startButtonLoading();
 
                 try {
-                    console.log(`Attempting to fetch: /api/get_report?name=${encodeURIComponent(studentName)}`);
                     const response = await fetch(`/api/get_report?name=${encodeURIComponent(studentName)}`);
-                    console.log("Fetch response received:", response);
 
                     if (response.ok) {
                         const data = await response.json();
-                        console.log("Data from API:", data);
                         populateReportCard_v2(data);
-                        if (window.saveLastSearchedName) saveLastSearchedName(studentName);
-                        if (window.addNameToCommon) addNameToCommon(studentName);
+                        saveLastSearchedName(studentName);
+                        addNameToCommon(studentName);
+                        loadCommonNames(); 
                     } else {
-                        const errorData = await response.json().catch(() => ({ error: '无法解析错误信息。' }));
-                        console.log("Error data from API:", errorData);
-                        let errorMessage = errorData.error || `查询失败，服务器状态码: ${response.status}`;
+                        const errorData = await response.json().catch(() => ({ error: '无法解析服务器响应。' }));
+                        let errorMessage = errorData.error || `查询失败，服务器状态: ${response.status}`;
                         if (response.status === 404) {
-                            errorMessage = `未找到姓名为 "${studentName}" 的学生成绩信息。请检查姓名是否正确。`;
+                            errorMessage = `未能找到姓名为 "${studentName}" 的学生成绩信息。请核对姓名是否准确无误。`;
                         }
                         displayQueryError(errorMessage);
                     }
                 } catch (error) {
                     console.error('Query fetch error:', error);
-                    displayQueryError('查询服务暂时不可用或发生网络错误，请稍后再试。');
+                    displayQueryError('查询服务遇到网络问题或暂时无法连接，请稍后重试。');
                 } finally {
-                    console.log("Stopping button loading state in finally block.");
                     stopButtonLoading();
                 }
             });
         } else {
-            console.error("The query form (ID: 'query-form') was not found in the DOM. API calls will not be made.");
+            console.error("Query form (ID: 'query-form') not found. API calls will not be made.");
         }
 
         if (returnToQueryBtn) {
@@ -359,8 +379,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            showQueryForm();
-            loadLastSearchedName();
+            showQueryForm(); 
+            loadLastSearchedName(); 
             const currentYearEl = document.getElementById('current-year');
             if (currentYearEl) currentYearEl.textContent = new Date().getFullYear();
         });

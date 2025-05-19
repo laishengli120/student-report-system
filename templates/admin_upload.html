@@ -105,7 +105,7 @@
         <form action="{{ url_for('admin_upload_page') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
             <div>
                 <label for="excel_file" class="sr-only">选择 Excel 文件：</label>
-                <input type="file" name="excel_file" id="excel_file" required
+                <input type="file" name="excel_file" id="excel_file" required accept=".xlsx, .xls"
                        class="block w-full text-sm text-gray-700 border border-gray-300 rounded-md cursor-pointer
                               file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium
                               file:bg-tsinghua-purple file:text-white hover:file:bg-tsinghua-purple-dark
