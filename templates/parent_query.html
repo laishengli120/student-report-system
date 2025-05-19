@@ -27,9 +27,45 @@
           }
           @keyframes spin { to { transform: rotate(360deg); } }
 
-          /* Subtle background pattern */
+          /* Subtle background pattern for body */
           .bg-pattern {
             background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23e5e7eb' fill-opacity='0.4'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414zM41.95 14.536l8.484 8.484-1.414 1.414-8.484-8.484 1.414-1.414zM10 16c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+          }
+
+          /* Carousel Styles - adjusted for placement within query-section */
+          .carousel-container {
+            position: relative;
+            width: 100%; /* Takes width of parent */
+            max-width: 600px; /* Original max-width constraint for the carousel itself */
+            height: 250px; 
+            margin: 0 auto 1.5rem auto; /* Centered with bottom margin */
+            overflow: hidden;
+            border-radius: 0.75rem; /* Restored rounded corners */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Restored shadow */
+          }
+
+          .carousel-slide {
+            position: absolute; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0; 
+            visibility: hidden; 
+            transition: opacity 1.2s cubic-bezier(0.42, 0, 0.58, 1), visibility 0s linear 1.2s;
+          }
+
+          .carousel-slide.active {
+            opacity: 1; 
+            visibility: visible;
+            z-index: 1; 
+            transition: opacity 1.2s cubic-bezier(0.42, 0, 0.58, 1), visibility 0s linear 0s;
+          }
+
+          .carousel-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
           }
         }
         @tailwind base;
@@ -57,15 +93,35 @@
     </script>
 </head>
 <body class="bg-gray-100 bg-pattern text-gray-800 min-h-screen flex flex-col font-sans">
-    <main class="flex-grow w-full container mx-auto px-4 sm:px-6 py-10 sm:py-12">
-        <div class="w-full max-w-2xl mx-auto">
-            <div id="query-section" class="bg-white p-6 sm:p-10 rounded-xl shadow-2xl transition-all duration-500 ease-in-out">
-                <div class="text-center mb-8 sm:mb-10">
-                    <svg class="w-16 h-16 text-tsinghua-purple mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                    </svg>
-                    <h1 class="text-3xl sm:text-4xl font-bold theme-purple-text mb-2">学生期末成绩查询</h1>
-                    <p class="text-sm sm:text-md text-gray-500">轻松洞悉学业进展，输入姓名即刻开启。</p>
+
+    <main class="flex-grow w-full container mx-auto px-4 sm:px-6 pt-0 pb-10 sm:pb-12">
+        <div class="w-full max-w-2xl mx-auto"> <div id="query-section" class="transition-all duration-500 ease-in-out mt-10 sm:mt-12"> <div id="campus-safety-carousel" class="carousel-container">
+                    <div class="carousel-slide active">
+                        <img src="/static/images/safety5.jpg" alt="Campus Safety Tip 1">
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="/static/images/safety4.jpg" alt="Campus Safety Tip 2">
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="/static/images/safety1.png" alt="Campus Safety Tip 3">
+                    </div>
+                </div>
+
+                <h2 class="text-2xl font-semibold theme-purple-text mb-4 flex items-center">
+                    <span class="bg-tsinghua-purple h-5 w-1.5 mr-2.5 rounded-sm"></span>
+                    <span>期末通知书查询</span>
+                </h2>
+                
+                <div id="query-error-message" class="hidden mb-4 p-3.5 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded-md shadow" role="alert">
+                    <div class="flex">
+                        <div class="py-1">
+                            <svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zM11.414 10l2.829-2.828a1 1 0 1 0-1.414-1.414L10 8.586 7.172 5.757a1 1 0 0 0-1.414 1.414L8.586 10l-2.829 2.828a1 1 0 1 0 1.414 1.414L10 11.414l2.828 2.829a1 1 0 0 0 1.414-1.414L11.414 10z"/></svg>
+                        </div>
+                        <div>
+                            <p class="font-bold">查询出错</p>
+                            <p id="query-error-text" class="text-sm"></p>
+                        </div>
+                    </div>
                 </div>
 
                 <form id="query-form" class="space-y-6">
@@ -83,11 +139,6 @@
                         </div>
                     </div>
 
-                    <div id="common-queries-container" class="hidden pt-2">
-                        <p class="text-xs font-medium text-gray-500 mb-2.5 text-center">或选择最近查过的:</p>
-                        <div id="common-names-list" class="flex flex-wrap gap-2 justify-center"></div>
-                    </div>
-
                     <div>
                         <button type="submit" id="query-submit-btn"
                                 class="w-full bg-tsinghua-purple hover:bg-tsinghua-purple-dark text-white font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-4 focus:ring-tsinghua-purple/30 transition-all duration-150 ease-in-out flex items-center justify-center h-[50px] shadow-md hover:shadow-lg transform hover:scale-105 text-base">
@@ -95,19 +146,12 @@
                             <div id="button-loading-spinner" class="button-spinner ml-2 hidden"></div>
                         </button>
                     </div>
-                </form>
 
-                <div id="query-error-message" class="hidden mt-6 p-3.5 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded-md shadow" role="alert">
-                    <div class="flex">
-                        <div class="py-1">
-                            <svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zM11.414 10l2.829-2.828a1 1 0 1 0-1.414-1.414L10 8.586 7.172 5.757a1 1 0 0 0-1.414 1.414L8.586 10l-2.829 2.828a1 1 0 1 0 1.414 1.414L10 11.414l2.828 2.829a1 1 0 0 0 1.414-1.414L11.414 10z"/></svg>
-                        </div>
-                        <div>
-                            <p class="font-bold">查询出错</p>
-                            <p id="query-error-text" class="text-sm"></p>
-                        </div>
+                    <div id="common-queries-container" class="hidden pt-2">
+                        <p class="text-xs font-medium text-gray-500 mb-2.5 text-center">或选择最近查过的:</p>
+                        <div id="common-names-list" class="flex flex-wrap gap-2 justify-center"></div>
                     </div>
-                </div>
+                </form>
             </div>
 
             <div id="report-card-section" class="hidden mt-8 sm:mt-10">
@@ -127,7 +171,7 @@
                             <p><strong id="report-student-name-salutation" class="theme-purple-text text-base sm:text-lg"></strong> 同学家长：</p>
                             <p>您好！</p>
                             <p class="text-xs sm:text-sm">
-                                在您的大力支持和配合下，本学期各项工作已顺利完成。根据教育局通知，我校暑假定于 <strong class="theme-purple-text font-semibold">2024年7月6日正式放假</strong>，下学期 <strong class="theme-purple-text font-semibold">2024年8月30日-8月31日开学报到，9月1日正式开学上课</strong>。（此部分内容未来可由管理员在后台编辑更新）
+                                在您的大力支持和配合下，本学期各项工作已顺利完成。根据教育局通知，我校暑假定于 <strong class="theme-purple-text font-semibold">2025年7月5日正式放假</strong>，下学期 <strong class="theme-purple-text font-semibold">2025年8月29日-8月30日开学报到，8月31日正式开学上课</strong>。（此部分内容未来可由管理员在后台编辑更新）
                             </p>
                             <p class="text-xs sm:text-sm">现将本学期贵子女的在校情况及相关事宜通知如下，请家长配合做好孩子在假期间的教育工作。</p>
                         </div>
@@ -142,7 +186,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="scores-table-body" class="divide-y divide-gray-200">
-                                    </tbody>
+                                </tbody>
                             </table>
                         </div>
 
@@ -150,9 +194,6 @@
                         <div id="display-final-remarks" class="p-4 sm:p-5 border-2 border-tsinghua-purple/30 bg-tsinghua-purple/10 rounded-lg min-h-[90px] text-gray-700 italic leading-relaxed shadow-inner text-sm sm:text-base">
                         </div>
 
-                        <div class="text-xs text-gray-400 text-right mt-8 sm:mt-10">
-                            报告生成于：<span id="report-generated-time"></span>
-                        </div>
                     </div>
                      <div class="p-5 sm:p-7 border-t border-gray-200 text-center bg-gray-50 rounded-b-xl">
                         <button type="button" id="return-to-query-btn"
@@ -174,6 +215,7 @@
         const MAX_COMMON_NAMES = 3;
         const COMMON_NAMES_STORAGE_KEY = 'commonStudentNames';
         const LAST_SEARCHED_NAME_KEY = 'lastSearchedStudentName';
+        const CAROUSEL_AUTOPLAY_DELAY = 7000; // milliseconds
 
         // --- DOM Elements ---
         const querySection = document.getElementById('query-section');
@@ -189,21 +231,61 @@
         const queryErrorTextP = document.getElementById('query-error-text');
         const returnToQueryBtn = document.getElementById('return-to-query-btn');
         const reportStudentNameSalutationEl = document.getElementById('report-student-name-salutation');
+        const carouselSlides = document.querySelectorAll('#campus-safety-carousel .carousel-slide');
+
+
+        // --- Carousel Logic ---
+        let currentSlideIndex = 0;
+        let carouselAutoplayInterval;
+
+        function showSlide(index) {
+            carouselSlides.forEach((slide, i) => {
+                if (i === index) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+        }
+        
+        function changeSlideOnInterval() {
+            currentSlideIndex = (currentSlideIndex + 1 + carouselSlides.length) % carouselSlides.length;
+            showSlide(currentSlideIndex);
+        }
+
+        function startCarouselAutoplay() {
+            if (carouselSlides.length > 1) {
+                carouselAutoplayInterval = setInterval(() => {
+                    changeSlideOnInterval();
+                }, CAROUSEL_AUTOPLAY_DELAY);
+            }
+        }
+
+        function stopCarouselAutoplay() {
+            clearInterval(carouselAutoplayInterval);
+        }
+
+        function resetCarouselAutoplay() {
+            stopCarouselAutoplay();
+            startCarouselAutoplay();
+        }
+
 
         // --- UI State Management ---
         function showQueryForm() {
-            querySection.classList.remove('hidden');
+            querySection.classList.remove('hidden'); 
             reportCardSection.classList.add('hidden');
-            queryErrorMessageDiv.classList.add('hidden');
-            studentNameInput.value = localStorage.getItem(LAST_SEARCHED_NAME_KEY) || '';
-            studentNameInput.focus();
+            if (studentNameInput) {
+                studentNameInput.value = localStorage.getItem(LAST_SEARCHED_NAME_KEY) || '';
+                studentNameInput.focus();
+            }
             loadCommonNames();
         }
 
         function showReportCardView() {
-            querySection.classList.add('hidden');
+            querySection.classList.add('hidden'); // This was hiding the whole query section including carousel
             reportCardSection.classList.remove('hidden');
-            queryErrorMessageDiv.classList.add('hidden');
+            // queryErrorMessageDiv.classList.add('hidden'); // Already handled
             window.scrollTo(0, 0);
         }
 
@@ -227,32 +309,47 @@
             if (!queryErrorTextP || !queryErrorMessageDiv) return;
             queryErrorTextP.textContent = message || '查询失败，请检查输入或稍后再试。';
             queryErrorMessageDiv.classList.remove('hidden');
-            // Animation for error message
             queryErrorMessageDiv.style.opacity = '0';
-            queryErrorMessageDiv.style.transform = 'translateY(0.5rem)';
+            queryErrorMessageDiv.style.transform = 'translateY(-0.5rem)'; 
             requestAnimationFrame(() => {
                 queryErrorMessageDiv.style.transition = 'opacity 300ms ease-out, transform 300ms ease-out';
                 queryErrorMessageDiv.style.opacity = '1';
                 queryErrorMessageDiv.style.transform = 'translateY(0)';
             });
 
+            // Ensure relevant query parts are visible if an error occurs
+            if (queryForm) queryForm.classList.remove('hidden');
+            if (document.querySelector('#query-section h2')) document.querySelector('#query-section h2').classList.remove('hidden');
+            if (document.getElementById('common-queries-container')) document.getElementById('common-queries-container').classList.remove('hidden');
+
             if (reportCardSection && !reportCardSection.classList.contains('hidden')) {
                 reportCardSection.classList.add('hidden');
             }
-            if (querySection && querySection.classList.contains('hidden')) {
-                 querySection.classList.remove('hidden');
-            }
+            // querySection should remain visible as it contains the form and error message
         }
-
+        
         function populateReportCard_v2(data) {
             if (reportStudentNameSalutationEl) {
                  reportStudentNameSalutationEl.textContent = data.student_name || '____';
             }
+            const currentReportYear = new Date().getFullYear(); 
+            const nextReportYear = currentReportYear + 1;
+            document.getElementById('report-term').textContent = data.term || `（${currentReportYear}-${nextReportYear} 学年）`;
 
-            document.getElementById('report-term').textContent = data.term || `（${new Date().getFullYear()} 学年）`;
+            const holidayInfoParagraph = document.querySelector('#report-card-content .p-5.sm\\:p-7 p.text-xs.sm\\:text-sm:nth-of-type(3)');
+            if (holidayInfoParagraph) {
+                 const summerHolidayStartDay = 5; 
+                 const autumnSemesterRegistrationStartDay = 29;
+                 const autumnSemesterRegistrationEndDay = 30;
+                 const autumnSemesterClassesStartDay = 31; 
+
+                 holidayInfoParagraph.innerHTML = 
+                    `在您的大力支持和配合下，本学期各项工作已顺利完成。根据教育局通知，我校暑假定于 <strong class="theme-purple-text font-semibold">${currentReportYear}年7月${summerHolidayStartDay}日正式放假</strong>，下学期 <strong class="theme-purple-text font-semibold">${currentReportYear}年8月${autumnSemesterRegistrationStartDay}日-${autumnSemesterRegistrationEndDay}日开学报到，8月${autumnSemesterClassesStartDay}日正式开学上课</strong>。（此部分内容未来可由管理员在后台编辑更新）`;
+            }
+
 
             const scoresTableBody = document.getElementById('scores-table-body');
-            scoresTableBody.innerHTML = ''; 
+            scoresTableBody.innerHTML = '';
 
             const scores = {
                 '语文': data.chinese_score,
@@ -263,7 +360,6 @@
             for (const subject in scores) {
                 if (scores[subject] !== undefined && scores[subject] !== null) {
                     hasScores = true;
-                    // Adjusted classes for mobile score prominence
                     const row = `<tr class="hover:bg-tsinghua-purple/5 transition-colors duration-150">
                                     <td class="py-3 px-2 sm:p-3 text-gray-700 text-sm sm:text-base">${subject}</td>
                                     <td class="py-3 px-2 sm:p-3 text-center font-bold theme-purple-text text-base sm:text-lg">${scores[subject]}</td>
@@ -276,7 +372,6 @@
             }
 
             document.getElementById('display-final-remarks').innerHTML = data.final_remarks ? data.final_remarks.replace(/\n/g, '<br>') : '<span class="text-gray-500">暂无期末评语。</span>';
-            document.getElementById('report-generated-time').textContent = new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
 
             showReportCardView();
         }
@@ -294,7 +389,7 @@
             if (!commonNamesListDiv || !commonQueriesContainer) return;
             const commonNamesStr = localStorage.getItem(COMMON_NAMES_STORAGE_KEY);
             const commonNames = commonNamesStr ? JSON.parse(commonNamesStr) : [];
-            commonNamesListDiv.innerHTML = ''; 
+            commonNamesListDiv.innerHTML = '';
 
             if (commonNames.length > 0) {
                 commonQueriesContainer.classList.remove('hidden');
@@ -322,8 +417,8 @@
         function addNameToCommon(name) {
             if (!name) return;
             let commonNames = JSON.parse(localStorage.getItem(COMMON_NAMES_STORAGE_KEY) || '[]');
-            commonNames = commonNames.filter(n => n !== name); 
-            commonNames.unshift(name); 
+            commonNames = commonNames.filter(n => n !== name);
+            commonNames.unshift(name);
             if (commonNames.length > MAX_COMMON_NAMES) commonNames = commonNames.slice(0, MAX_COMMON_NAMES);
             localStorage.setItem(COMMON_NAMES_STORAGE_KEY, JSON.stringify(commonNames));
         }
@@ -335,7 +430,7 @@
 
                 if (queryErrorMessageDiv && !queryErrorMessageDiv.classList.contains('hidden')) {
                     queryErrorMessageDiv.classList.add('hidden');
-                     queryErrorMessageDiv.style.opacity = '0'; // Reset for next animation
+                    queryErrorMessageDiv.style.opacity = '0';
                 }
 
                 if (!studentName) {
@@ -353,7 +448,7 @@
                         const data = await response.json();
                         populateReportCard_v2(data);
                         saveLastSearchedName(studentName);
-                        addNameToCommon(studentName);
+                        addNameToCommon(studentName); 
                         loadCommonNames(); 
                     } else {
                         const errorData = await response.json().catch(() => ({ error: '无法解析服务器响应。' }));
@@ -375,14 +470,33 @@
         }
 
         if (returnToQueryBtn) {
-            returnToQueryBtn.addEventListener('click', () => { showQueryForm(); });
+            returnToQueryBtn.addEventListener('click', () => {
+                // queryErrorMessageDiv.classList.add('hidden');  // Error message is hidden by showQueryForm logic if needed
+                // Restore visibility of query form elements
+                if (queryForm) queryForm.classList.remove('hidden');
+                if (document.querySelector('#query-section h2')) document.querySelector('#query-section h2').classList.remove('hidden');
+                if (document.getElementById('common-queries-container')) document.getElementById('common-queries-container').classList.remove('hidden');
+                
+                showQueryForm(); // This already handles showing query section and hiding report card
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            showQueryForm(); 
-            loadLastSearchedName(); 
+            showQueryForm();
+            loadLastSearchedName();
             const currentYearEl = document.getElementById('current-year');
             if (currentYearEl) currentYearEl.textContent = new Date().getFullYear();
+
+            if (carouselSlides.length > 0) {
+                showSlide(currentSlideIndex);
+                startCarouselAutoplay();
+
+                const carousel = document.getElementById('campus-safety-carousel');
+                if (carousel) {
+                    carousel.addEventListener('mouseenter', stopCarouselAutoplay);
+                    carousel.addEventListener('mouseleave', startCarouselAutoplay);
+                }
+            }
         });
     </script>
 </body>
