@@ -18,6 +18,11 @@
           .hover\:bg-theme-purple-dark:hover { background-color: theme('colors.tsinghua-purple.dark'); }
           .ring-theme-purple:focus { --tw-ring-color: theme('colors.tsinghua-purple.DEFAULT'); }
 
+          .bg-theme-gold { background-color: theme('colors.theme-gold.DEFAULT'); }
+          .hover\:bg-theme-gold-dark:hover { background-color: theme('colors.theme-gold.dark'); }
+          .ring-theme-gold-light:focus { --tw-ring-color: theme('colors.theme-gold.light'); }
+
+
           /* Button Spinner Animation */
           .button-spinner {
             width: 1.25em; height: 1.25em; border-width: 2px;
@@ -27,21 +32,16 @@
           }
           @keyframes spin { to { transform: rotate(360deg); } }
 
-          /* Subtle background pattern for body */
-          .bg-pattern {
-            background-image: url("data:image/svg+xml,%3Csvg width='52' height='26' viewBox='0 0 52 26' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23e5e7eb' fill-opacity='0.4'%3E%3Cpath d='M10 10c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6zm25.464-1.95l8.486 8.486-1.414 1.414-8.486-8.486 1.414-1.414zM41.95 14.536l8.484 8.484-1.414 1.414-8.484-8.484 1.414-1.414zM10 16c0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6h2c0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4 3.314 0 6 2.686 6 6 0 2.21 1.79 4 4 4v2c-3.314 0-6-2.686-6-6 0-2.21-1.79-4-4-4-3.314 0-6-2.686-6-6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-          }
-
-          /* Carousel Styles - adjusted for placement within query-section */
+          /* Carousel Styles */
           .carousel-container {
             position: relative;
-            width: 100%; /* Takes width of parent */
-            max-width: 600px; /* Original max-width constraint for the carousel itself */
+            width: 100%;
+            max-width: 600px;
             height: 250px; 
-            margin: 0 auto 1.5rem auto; /* Centered with bottom margin */
+            margin-left: auto;
+            margin-right: auto;
             overflow: hidden;
-            border-radius: 0.75rem; /* Restored rounded corners */
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Restored shadow */
+            border-radius: 0.75rem;
           }
 
           .carousel-slide {
@@ -81,10 +81,15 @@
             },
             colors: {
               'tsinghua-purple': {
-                DEFAULT: '#660066', // Tsinghua Purple
-                dark: '#520052', // A darker shade
-                light: '#f0e6f0', // A very light shade for backgrounds/accents
-                lighter: '#f9f5f9' // An even lighter shade for subtle backgrounds
+                DEFAULT: '#660066',
+                dark: '#520052',
+                light: '#f0e6f0',
+                lighter: '#f9f5f9'
+              },
+              'theme-gold': { // 新增的辅助色定义
+                DEFAULT: '#FACC15', // Tailwind yellow-400
+                dark: '#EAB308',    // Tailwind yellow-500 (用于悬停)
+                light: '#FDE047'    // Tailwind yellow-300 (可用于焦点环等)
               }
             }
           }
@@ -92,12 +97,14 @@
       }
     </script>
 </head>
-<body class="bg-gray-100 bg-pattern text-gray-800 min-h-screen flex flex-col font-sans">
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col font-sans">
 
-    <main class="flex-grow w-full container mx-auto px-4 sm:px-6 pt-0 pb-10 sm:pb-12">
-        <div class="w-full max-w-2xl mx-auto"> <div id="query-section" class="transition-all duration-500 ease-in-out mt-10 sm:mt-12"> <div id="campus-safety-carousel" class="carousel-container">
+    <main class="flex-grow w-full container mx-auto px-3 sm:px-6 pt-4 pb-8 sm:pt-6 sm:pb-10">
+        <div class="w-full max-w-2xl mx-auto">
+            <div id="query-section" class="transition-all duration-500 ease-in-out mt-6 sm:mt-8">
+                <div id="campus-safety-carousel" class="carousel-container mb-6">
                     <div class="carousel-slide active">
-                        <img src="/static/images/safety5.jpg" alt="Campus Safety Tip 1">
+                        <img src="/static/images/safety5.png" alt="Campus Safety Tip 1">
                     </div>
                     <div class="carousel-slide">
                         <img src="/static/images/safety4.jpg" alt="Campus Safety Tip 2">
@@ -107,15 +114,15 @@
                     </div>
                 </div>
 
-                <h2 class="text-2xl font-semibold theme-purple-text mb-4 flex items-center">
+                <h2 class="text-2xl font-semibold theme-purple-text mb-3 flex items-center">
                     <span class="bg-tsinghua-purple h-5 w-1.5 mr-2.5 rounded-sm"></span>
                     <span>期末通知书查询</span>
                 </h2>
                 
-                <div id="query-error-message" class="hidden mb-4 p-3.5 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded-md shadow" role="alert">
+                <div id="query-error-message" class="hidden mb-3 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded-md shadow-sm" role="alert">
                     <div class="flex">
                         <div class="py-1">
-                            <svg class="fill-current h-6 w-6 text-red-500 mr-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zM11.414 10l2.829-2.828a1 1 0 1 0-1.414-1.414L10 8.586 7.172 5.757a1 1 0 0 0-1.414 1.414L8.586 10l-2.829 2.828a1 1 0 1 0 1.414 1.414L10 11.414l2.828 2.829a1 1 0 0 0 1.414-1.414L11.414 10z"/></svg>
+                            <svg class="fill-current h-6 w-6 text-red-500 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zM11.414 10l2.829-2.828a1 1 0 1 0-1.414-1.414L10 8.586 7.172 5.757a1 1 0 0 0-1.414 1.414L8.586 10l-2.829 2.828a1 1 0 1 0 1.414 1.414L10 11.414l2.828 2.829a1 1 0 0 0 1.414-1.414L11.414 10z"/></svg>
                         </div>
                         <div>
                             <p class="font-bold">查询出错</p>
@@ -124,9 +131,9 @@
                     </div>
                 </div>
 
-                <form id="query-form" class="space-y-6">
+                <form id="query-form" class="space-y-4">
                     <div>
-                        <label for="student_name_input" class="block text-sm font-medium text-gray-700 mb-1.5 sr-only">学生姓名</label>
+                        <label for="student_name_input" class="block text-sm font-medium text-gray-700 mb-1 sr-only">学生姓名</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
                                 <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -135,39 +142,39 @@
                             </div>
                             <input type="text" name="student_name" id="student_name_input"
                                    placeholder="请输入学生姓名开始查询..."
-                                   class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-tsinghua-purple focus:ring-2 focus:ring-tsinghua-purple/50 transition-all duration-150 ease-in-out shadow-sm hover:shadow-md text-base">
+                                   class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-tsinghua-purple focus:ring-2 focus:ring-tsinghua-purple/50 transition-all duration-150 ease-in-out text-base">
                         </div>
                     </div>
 
                     <div>
                         <button type="submit" id="query-submit-btn"
-                                class="w-full bg-tsinghua-purple hover:bg-tsinghua-purple-dark text-white font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-4 focus:ring-tsinghua-purple/30 transition-all duration-150 ease-in-out flex items-center justify-center h-[50px] shadow-md hover:shadow-lg transform hover:scale-105 text-base">
+                                class="w-full bg-theme-gold hover:bg-theme-gold-dark text-tsinghua-purple font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-tsinghua-purple/60 transition-all duration-150 ease-in-out flex items-center justify-center h-[50px] transform hover:scale-105 text-base">
                             <span id="query-button-text">立即查询</span>
                             <div id="button-loading-spinner" class="button-spinner ml-2 hidden"></div>
                         </button>
                     </div>
 
-                    <div id="common-queries-container" class="hidden pt-2">
-                        <p class="text-xs font-medium text-gray-500 mb-2.5 text-center">或选择最近查过的:</p>
+                    <div id="common-queries-container" class="hidden pt-1">
+                        <p class="text-xs font-medium text-gray-500 mb-2 text-center">或选择最近查过的:</p>
                         <div id="common-names-list" class="flex flex-wrap gap-2 justify-center"></div>
                     </div>
                 </form>
             </div>
 
-            <div id="report-card-section" class="hidden mt-8 sm:mt-10">
-                <div id="report-card-content" class="bg-white rounded-xl shadow-2xl overflow-hidden transition-all duration-500 ease-in-out">
-                    <div class="bg-tsinghua-purple text-white p-5 sm:p-7 text-center relative">
+            <div id="report-card-section" class="hidden mt-6 sm:mt-8">
+                <div id="report-card-content" class="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-500 ease-in-out">
+                    <div class="bg-tsinghua-purple text-white p-4 sm:p-6 text-center relative">
                         <div class="absolute top-3 left-3 sm:top-4 sm:left-4 opacity-30">
                              <svg class="w-8 h-8 sm:w-10 sm:h-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
                             </svg>
                         </div>
                         <h2 class="text-xl sm:text-2xl font-semibold">期末成绩通知书</h2>
-                        <p class="text-xs sm:text-sm opacity-90 mt-1.5" id="report-term">（学年学期）</p>
+                        <p class="text-xs sm:text-sm opacity-90 mt-1" id="report-term">（学年学期）</p>
                     </div>
 
-                    <div class="p-5 sm:p-7 text-gray-700 leading-relaxed text-sm">
-                        <div class="mb-7 space-y-3.5">
+                    <div class="p-4 sm:p-6 text-gray-700 leading-relaxed text-sm">
+                        <div class="mb-5 space-y-3">
                             <p><strong id="report-student-name-salutation" class="theme-purple-text text-base sm:text-lg"></strong> 同学家长：</p>
                             <p>您好！</p>
                             <p class="text-xs sm:text-sm">
@@ -176,13 +183,13 @@
                             <p class="text-xs sm:text-sm">现将本学期贵子女的在校情况及相关事宜通知如下，请家长配合做好孩子在假期间的教育工作。</p>
                         </div>
 
-                        <h3 class="text-base sm:text-lg font-semibold theme-purple-text mb-2.5">各科目成绩：</h3>
-                        <div class="overflow-x-auto mb-5 shadow rounded-lg border border-gray-200/80">
+                        <h3 class="text-base sm:text-lg font-semibold theme-purple-text mb-2">各科目成绩：</h3>
+                        <div class="overflow-x-auto mb-4 shadow-sm rounded-lg border border-gray-200/80">
                             <table class="w-full min-w-[280px]">
                                 <thead class="bg-tsinghua-purple/20">
                                     <tr>
-                                        <th class="py-2.5 px-2 sm:py-3 sm:px-3 text-left font-semibold theme-purple-text text-xs sm:text-sm">科目</th>
-                                        <th class="py-2.5 px-2 sm:py-3 sm:px-3 text-center font-semibold theme-purple-text text-xs sm:text-sm">分数</th>
+                                        <th class="py-2 px-2 sm:py-2.5 sm:px-3 text-left font-semibold theme-purple-text text-xs sm:text-sm">科目</th>
+                                        <th class="py-2 px-2 sm:py-2.5 sm:px-3 text-center font-semibold theme-purple-text text-xs sm:text-sm">分数</th>
                                     </tr>
                                 </thead>
                                 <tbody id="scores-table-body" class="divide-y divide-gray-200">
@@ -190,14 +197,14 @@
                             </table>
                         </div>
 
-                        <h3 class="text-base sm:text-lg font-semibold theme-purple-text mb-2.5">期末评语：</h3>
-                        <div id="display-final-remarks" class="p-4 sm:p-5 border-2 border-tsinghua-purple/30 bg-tsinghua-purple/10 rounded-lg min-h-[90px] text-gray-700 italic leading-relaxed shadow-inner text-sm sm:text-base">
+                        <h3 class="text-base sm:text-lg font-semibold theme-purple-text mb-2">期末评语：</h3>
+                        <div id="display-final-remarks" class="p-3 sm:p-4 border-2 border-tsinghua-purple/30 bg-tsinghua-purple/10 rounded-lg min-h-[80px] text-gray-700 italic leading-relaxed shadow-inner text-sm sm:text-base">
                         </div>
 
                     </div>
-                     <div class="p-5 sm:p-7 border-t border-gray-200 text-center bg-gray-50 rounded-b-xl">
+                     <div class="p-4 sm:p-5 border-t border-gray-200 text-center bg-gray-50/50 rounded-b-xl">
                         <button type="button" id="return-to-query-btn"
-                                class="bg-white hover:bg-gray-100 text-tsinghua-purple border border-tsinghua-purple font-semibold py-2 px-5 sm:py-2.5 sm:px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-tsinghua-purple/50 transition-all duration-150 ease-in-out shadow-sm hover:shadow-md text-sm sm:text-base">
+                                class="bg-white hover:bg-gray-100 text-tsinghua-purple border border-tsinghua-purple font-semibold py-2 px-4 sm:py-2 sm:px-5 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-tsinghua-purple/60 transition-all duration-150 ease-in-out text-sm sm:text-base">
                             返回重新查询
                         </button>
                     </div>
@@ -206,7 +213,7 @@
         </div>
     </main>
 
-    <footer class="text-center py-5 sm:py-6 mt-auto text-xs text-gray-500 w-full">
+    <footer class="text-center py-4 sm:py-5 mt-auto text-xs text-gray-500 w-full">
         &copy; <span id="current-year"></span> 学生成绩查询系统・清华紫主题・V2.1 Design
     </footer>
 
@@ -265,27 +272,19 @@
             clearInterval(carouselAutoplayInterval);
         }
 
-        function resetCarouselAutoplay() {
-            stopCarouselAutoplay();
-            startCarouselAutoplay();
-        }
-
-
         // --- UI State Management ---
         function showQueryForm() {
             querySection.classList.remove('hidden'); 
             reportCardSection.classList.add('hidden');
             if (studentNameInput) {
                 studentNameInput.value = localStorage.getItem(LAST_SEARCHED_NAME_KEY) || '';
-                studentNameInput.focus();
             }
             loadCommonNames();
         }
 
         function showReportCardView() {
-            querySection.classList.add('hidden'); // This was hiding the whole query section including carousel
+            querySection.classList.add('hidden'); 
             reportCardSection.classList.remove('hidden');
-            // queryErrorMessageDiv.classList.add('hidden'); // Already handled
             window.scrollTo(0, 0);
         }
 
@@ -317,7 +316,6 @@
                 queryErrorMessageDiv.style.transform = 'translateY(0)';
             });
 
-            // Ensure relevant query parts are visible if an error occurs
             if (queryForm) queryForm.classList.remove('hidden');
             if (document.querySelector('#query-section h2')) document.querySelector('#query-section h2').classList.remove('hidden');
             if (document.getElementById('common-queries-container')) document.getElementById('common-queries-container').classList.remove('hidden');
@@ -325,7 +323,6 @@
             if (reportCardSection && !reportCardSection.classList.contains('hidden')) {
                 reportCardSection.classList.add('hidden');
             }
-            // querySection should remain visible as it contains the form and error message
         }
         
         function populateReportCard_v2(data) {
@@ -333,10 +330,9 @@
                  reportStudentNameSalutationEl.textContent = data.student_name || '____';
             }
             const currentReportYear = new Date().getFullYear(); 
-            const nextReportYear = currentReportYear + 1;
-            document.getElementById('report-term').textContent = data.term || `（${currentReportYear}-${nextReportYear} 学年）`;
+            document.getElementById('report-term').textContent = data.term || `（${currentReportYear}-${currentReportYear + 1} 学年）`;
 
-            const holidayInfoParagraph = document.querySelector('#report-card-content .p-5.sm\\:p-7 p.text-xs.sm\\:text-sm:nth-of-type(3)');
+            const holidayInfoParagraph = document.querySelector('#report-card-content .p-4.sm\\:p-6 p.text-xs.sm\\:text-sm:nth-of-type(3)');
             if (holidayInfoParagraph) {
                  const summerHolidayStartDay = 5; 
                  const autumnSemesterRegistrationStartDay = 29;
@@ -361,14 +357,14 @@
                 if (scores[subject] !== undefined && scores[subject] !== null) {
                     hasScores = true;
                     const row = `<tr class="hover:bg-tsinghua-purple/5 transition-colors duration-150">
-                                    <td class="py-3 px-2 sm:p-3 text-gray-700 text-sm sm:text-base">${subject}</td>
-                                    <td class="py-3 px-2 sm:p-3 text-center font-bold theme-purple-text text-base sm:text-lg">${scores[subject]}</td>
+                                    <td class="py-2 px-2 sm:py-2.5 sm:px-3 text-gray-700 text-sm sm:text-base">${subject}</td>
+                                    <td class="py-2 px-2 sm:py-2.5 sm:px-3 text-center font-bold theme-purple-text text-base sm:text-lg">${scores[subject]}</td>
                                  </tr>`;
                     scoresTableBody.innerHTML += row;
                 }
             }
             if (!hasScores) {
-                 scoresTableBody.innerHTML = '<tr><td colspan="2" class="py-3 px-2 sm:p-3 text-center text-gray-500 text-sm sm:text-base">暂无科目成绩信息。</td></tr>';
+                 scoresTableBody.innerHTML = '<tr><td colspan="2" class="py-2 px-2 sm:py-2.5 sm:px-3 text-center text-gray-500 text-sm sm:text-base">暂无科目成绩信息。</td></tr>';
             }
 
             document.getElementById('display-final-remarks').innerHTML = data.final_remarks ? data.final_remarks.replace(/\n/g, '<br>') : '<span class="text-gray-500">暂无期末评语。</span>';
@@ -471,13 +467,11 @@
 
         if (returnToQueryBtn) {
             returnToQueryBtn.addEventListener('click', () => {
-                // queryErrorMessageDiv.classList.add('hidden');  // Error message is hidden by showQueryForm logic if needed
-                // Restore visibility of query form elements
                 if (queryForm) queryForm.classList.remove('hidden');
                 if (document.querySelector('#query-section h2')) document.querySelector('#query-section h2').classList.remove('hidden');
                 if (document.getElementById('common-queries-container')) document.getElementById('common-queries-container').classList.remove('hidden');
                 
-                showQueryForm(); // This already handles showing query section and hiding report card
+                showQueryForm();
             });
         }
 
