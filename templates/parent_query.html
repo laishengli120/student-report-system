@@ -99,24 +99,31 @@
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col font-sans">
 
+    <header class="bg-tsinghua-purple text-white sticky top-0 z-50">
+        <div class="container mx-auto px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+            <h1 class="text-lg sm:text-xl font-semibold tracking-wide">
+                三年级学生期末通知书成绩
+            </h1>
+            </div>
+    </header>
     <main class="flex-grow w-full container mx-auto px-3 sm:px-6 pt-4 pb-8 sm:pt-6 sm:pb-10">
         <div class="w-full max-w-2xl mx-auto">
-            <div id="query-section" class="transition-all duration-500 ease-in-out mt-6 sm:mt-8">
-                <div id="campus-safety-carousel" class="carousel-container mb-6">
+            <div id="query-section" class="bg-white p-6 sm:p-8 rounded-xl shadow-md transition-all duration-500 ease-in-out mt-6 sm:mt-8">
+                <div id="campus-safety-carousel" class="carousel-container mb-6 border border-tsinghua-purple/20">
                     <div class="carousel-slide active">
-                        <img src="/static/images/safety5.png" alt="Campus Safety Tip 1">
+                        <img src="/static/images/safety5.png" alt="校园安全提示：安全用电，人走断电">
                     </div>
                     <div class="carousel-slide">
-                        <img src="/static/images/safety4.jpg" alt="Campus Safety Tip 2">
+                        <img src="/static/images/safety4.jpg" alt="校园安全提示：遵守交通规则，注意出行安全">
                     </div>
                     <div class="carousel-slide">
-                        <img src="/static/images/safety1.png" alt="Campus Safety Tip 3">
+                        <img src="/static/images/safety1.png" alt="校园安全提示：防范电信诈骗，保护个人信息">
                     </div>
                 </div>
 
                 <h2 class="text-2xl font-semibold theme-purple-text mb-3 flex items-center">
                     <span class="bg-tsinghua-purple h-5 w-1.5 mr-2.5 rounded-sm"></span>
-                    <span>期末通知书查询</span>
+                    <span>输入名字</span>
                 </h2>
                 
                 <div id="query-error-message" class="hidden mb-3 p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded-md shadow-sm" role="alert">
@@ -148,10 +155,10 @@
 
                     <div>
                         <button type="submit" id="query-submit-btn"
-                                class="w-full bg-theme-gold hover:bg-theme-gold-dark text-tsinghua-purple font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-tsinghua-purple/60 transition-all duration-150 ease-in-out flex items-center justify-center h-[50px] transform hover:scale-105 text-base">
-                            <span id="query-button-text">立即查询</span>
-                            <div id="button-loading-spinner" class="button-spinner ml-2 hidden"></div>
-                        </button>
+        class="w-full bg-theme-purple hover:bg-theme-purple-dark text-white font-semibold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-theme-purple/60 transition-all duration-150 ease-in-out flex items-center justify-center h-[50px] transform hover:scale-105 text-base">
+    <span id="query-button-text">立即查询</span>
+    <div id="button-loading-spinner" class="button-spinner ml-2 hidden" style="border-color: white; border-right-color: transparent;"></div>
+</button>
                     </div>
 
                     <div id="common-queries-container" class="hidden pt-1">
@@ -213,7 +220,8 @@
         </div>
     </main>
 
-    <footer class="text-center py-4 sm:py-5 mt-auto text-xs text-gray-500 w-full">
+   
+    <footer class="text-center py-4 sm:py-5 mt-auto text-xs text-gray-500 w-full border-t border-gray-200">
         &copy; <span id="current-year"></span> 学生成绩查询系统・清华紫主题・V2.1 Design
     </footer>
 
