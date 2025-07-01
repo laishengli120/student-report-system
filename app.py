@@ -2,7 +2,7 @@ import os
 import sqlite3
 import pandas as pd
 from flask import (Flask, render_template, request, redirect, url_for,
-                   session, jsonify, flash, g) # Added g
+                   session, jsonify, flash, g)
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from functools import wraps
@@ -45,7 +45,7 @@ def init_db(app_context=None): # Allow passing app_context for CLI
     """Initializes the database and creates tables including a default admin."""
     def execute_init(db):
         cursor = db.cursor()
-        # Create student_reports table
+        # Create student_reports table (MODIFIED to include comprehensive_score)
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS student_reports (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,6 +53,7 @@ def init_db(app_context=None): # Allow passing app_context for CLI
             chinese_score REAL,
             math_score REAL,
             english_score REAL,
+            comprehensive_score REAL, -- ADDED new column for comprehensive score
             final_remarks TEXT,
             uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
@@ -118,16 +119,8 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# --- Report Card Preamble (Hardcoded for now) ---
-DEFAULT_ANNOUNCEMENT_HTML = """
-<p><strong id="report-student-name-salutation" class="theme-purple-text">{student_name}</strong> 同学之家长：</p>
-<p>您好！</p>
-<p>
-    在您的大力支持和配合下，本学期各项工作已顺利完成。根据教育局通知，我校暑假定于：<span class="double-underline font-semibold">2024年7月6日正式放假</span>，下学期<span class="double-underline font-semibold">2024年8月30日-8月31日开学报到，9月1日正式开学上课</span>。（此部分内容未来可由管理员在后台编辑更新）
-</p>
-<p>现将本学期贵子女的在校情况及相关事宜通知如下，请家长配合做好孩子在假期间的教育工作。</p>
-"""
-CURRENT_TERM_INFO = "2024-2025学年 第一学期"
+# --- Report Card Preamble (REMOVED HARDCODED HTML AND TERM INFO) ---
+# DEFAULT_ANNOUNCEMENT_HTML and CURRENT_TERM_INFO are now handled by frontend.
 
 # --- Routes ---
 @app.route('/')
@@ -152,8 +145,9 @@ def get_report_api():
 
     if report:
         report_data = dict(report)
-        report_data['announcement_html'] = DEFAULT_ANNOUNCEMENT_HTML.format(student_name=report_data['student_name'])
-        report_data['term'] = CURRENT_TERM_INFO
+        # REMOVED: announcement_html and term are no longer sent from backend
+        # report_data['announcement_html'] = DEFAULT_ANNOUNCEMENT_HTML.format(student_name=report_data['student_name'])
+        # report_data['term'] = CURRENT_TERM_INFO
         return jsonify(report_data)
     else:
         return jsonify({'error': f'未找到姓名为 "{student_name_query}" 的学生成绩信息。'}), 404
@@ -217,7 +211,8 @@ def admin_upload_page():
                 file.save(filepath)
                 df = pd.read_excel(filepath)
 
-                required_conceptual_cols = ['姓名', '语文', '数学', '英语', '期末评语']
+                # MODIFIED: Added '综合' to required columns
+                required_conceptual_cols = ['姓名', '语文', '数学', '英语', '综合', '期末评语']
                 actual_columns = [str(col).strip() for col in df.columns]
 
                 # Basic check if all required columns are conceptually present
@@ -242,11 +237,13 @@ def admin_upload_page():
                         # Delete old records for the same student
                         cursor.execute("DELETE FROM student_reports WHERE student_name = ?", (student_name,))
 
+                        # MODIFIED: Added 'comprehensive_score' to data_to_insert
                         data_to_insert = {
                             'student_name': student_name,
                             'chinese_score': pd.to_numeric(row.get('语文'), errors='coerce'),
                             'math_score': pd.to_numeric(row.get('数学'), errors='coerce'),
                             'english_score': pd.to_numeric(row.get('英语'), errors='coerce'),
+                            'comprehensive_score': pd.to_numeric(row.get('综合'), errors='coerce'), # ADDED
                             'final_remarks': str(row.get('期末评语', '')).strip() if pd.notna(row.get('期末评语')) else None
                         }
                         
@@ -254,9 +251,10 @@ def admin_upload_page():
                             if pd.isna(value): # Check for pandas NaN or NaT
                                 data_to_insert[key] = None
                         
+                        # MODIFIED: Updated INSERT statement to include comprehensive_score
                         cursor.execute("""
-                            INSERT INTO student_reports (student_name, chinese_score, math_score, english_score, final_remarks)
-                            VALUES (:student_name, :chinese_score, :math_score, :english_score, :final_remarks)
+                            INSERT INTO student_reports (student_name, chinese_score, math_score, english_score, comprehensive_score, final_remarks)
+                            VALUES (:student_name, :chinese_score, :math_score, :english_score, :comprehensive_score, :final_remarks)
                         """, data_to_insert)
                         records_processed += 1
                     except KeyError as e:
