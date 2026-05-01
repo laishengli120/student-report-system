@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>审核评语 - 教务管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <style>
+        :root { --paper-red: #d93025; --paper-red-dark: #b02318; }
+
+        body { background-color: #f0f2f5; font-family: 'Noto Serif SC', serif; }
+        .font-kaiti { font-family: "KaiTi", "STKaiti", "楷体", "Noto Serif SC", serif; }
+        .font-calligraphy { font-family: 'Ma Shan Zheng', cursive; }
+
+        /* Sticky header */
+        .sticky-header {
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(8px);
+            border-bottom: 2px solid var(--paper-red);
+        }
+
+        /* Report-style table */
+        .report-table { width: 100%; border-collapse: collapse; border: 2px solid var(--paper-red); }
+        .report-table th, .report-table td { border: 1px solid var(--paper-red); padding: 8px 12px; }
+        .report-table th { background-color: #fff5f5; color: var(--paper-red); font-weight: bold; text-align: center; font-size: 0.85rem; }
+        .report-table td { font-size: 0.9rem; color: #333; vertical-align: middle; }
+        .report-table tbody tr:hover { background-color: #fff9f9; }
+        .report-table tbody tr.row-pending { background-color: #fffbeb; }
+        .report-table tbody tr.row-pending:hover { background-color: #fef3c7; }
+
+        /* Card (mobile) */
+        .student-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-top: 4px solid var(--paper-red);
+            overflow: hidden;
+        }
+        .student-card.card-pending { border-top-color: #f59e0b; }
+
+        /* Score badge */
+        .score-badge { border: 1px solid var(--paper-red); border-radius: 6px; text-align: center; padding: 6px 4px; }
+        .score-badge .label { font-size: 10px; color: var(--paper-red); display: block; margin-bottom: 2px; font-family: "KaiTi", serif; }
+        .score-badge .value { font-size: 1.1rem; font-weight: bold; font-family: monospace; }
+        .score-badge.empty .value { color: #9ca3af; }
+        .score-badge.good .value { color: #15803d; }
+        .score-badge.ok .value { color: #374151; }
+        .score-badge.bad .value { color: #dc2626; }
+
+        /* Type tags */
+        .type-tag { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; padding: 2px 7px; border-radius: 20px; background: #fff5f5; color: var(--paper-red); border: 1px solid #fca5a5; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
+        .type-tag:hover { background: #fee2e2; }
+        .type-tag-add { display: inline-flex; align-items: center; font-size: 11px; padding: 2px 7px; border-radius: 20px; border: 1px dashed #d1d5db; color: #9ca3af; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+        .type-tag-add:hover { border-color: var(--paper-red); color: var(--paper-red); }
+
+        /* Textarea */
+        textarea.remarks-input {
+            width: 100%; border: 1px solid #fca5a5; border-radius: 6px; padding: 8px 10px;
+            font-family: "KaiTi", "STKaiti", "楷体", serif; font-size: 0.9rem; color: #374151;
+            background: #fff; outline: none; resize: vertical; transition: border-color 0.15s;
+            line-height: 1.7;
+        }
+        textarea.remarks-input:focus { border-color: var(--paper-red); background: #fffcfc; }
+        textarea.remarks-input::placeholder { color: #d1d5db; font-family: 'Noto Serif SC', serif; }
+
+        /* Buttons */
+        .btn-red { background: var(--paper-red); color: #fff; border-radius: 8px; font-weight: 600; transition: background 0.15s, transform 0.1s; cursor: pointer; }
+        .btn-red:hover { background: var(--paper-red-dark); }
+        .btn-red:active { transform: scale(0.97); }
+        .btn-red:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+        .btn-outline { border: 1px solid #d1d5db; color: #374151; border-radius: 8px; transition: background 0.15s; cursor: pointer; background: #fff; }
+        .btn-outline:hover { background: #f9fafb; }
+        .btn-green { background: #16a34a; color: #fff; border-radius: 8px; font-weight: 600; transition: background 0.15s, transform 0.1s; cursor: pointer; }
+        .btn-green:hover { background: #15803d; }
+        .btn-green:active { transform: scale(0.97); }
+        .btn-green:disabled { opacity: 0.45; cursor: not-allowed; }
+
+        /* Animations */
+        @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .card-enter { animation: fadeSlideIn 0.22s ease-out; }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: scale(1); } }
+        .picker-pop { animation: popIn 0.15s ease-out; }
+
+        /* Toast */
+        #toast { transition: opacity 0.25s, transform 0.25s; }
+        #toast.hidden { opacity: 0; transform: translateY(-8px) translateX(-50%); pointer-events: none; }
+
+        /* Progress bar */
+        .progress-bar-track { background: #fee2e2; border-radius: 4px; overflow: hidden; height: 5px; }
+        .progress-bar-fill { background: var(--paper-red); height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+
+        /* Page nav buttons */
+        .page-nav-btn { border: 1px solid #fca5a5; color: var(--paper-red); border-radius: 8px; padding: 8px 16px; font-size: 0.85rem; background: #fff; transition: background 0.15s; cursor: pointer; }
+        .page-nav-btn:hover:not(:disabled) { background: #fff5f5; }
+        .page-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* Filter pills */
+        .filter-pill { flex:1; text-align:center; padding:7px 0; border-radius:20px; font-size:0.8rem; font-family:"KaiTi",serif; background:#f3f4f6; color:#6b7280; border:none; cursor:pointer; transition:all 0.2s; }
+        .filter-pill.active { background:var(--paper-red); color:#fff; font-weight:600; }
+        .pill-count { font-size:0.7rem; opacity:0.7; }
+    </style>
+</head>
+<body class="min-h-screen pb-28 md:pb-6">
+
+<!-- ====== 顶部导航栏 ====== -->
+<div class="sticky top-0 z-30 sticky-header shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+        <!-- 返回按钮 -->
+        <a href="{{ url_for('admin_upload_page') }}" class="shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-50 text-paper-red transition">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+
+        <!-- 标题 -->
+        <div class="flex items-center gap-2">
+            <h1 class="text-lg font-bold text-gray-900 font-kaiti tracking-wide">评语审核</h1>
+            <span class="text-paper-red font-calligraphy text-sm hidden sm:inline">·</span>
+            <span class="text-xs text-gray-400 hidden sm:inline font-kaiti">教务管理后台</span>
+        </div>
+
+        <!-- 桌面端状态 + 操作 -->
+        <div class="hidden md:flex items-center gap-3 ml-auto">
+            <div class="text-right">
+                <div class="text-xs text-gray-500 font-kaiti">共 <b id="desk-total" class="text-paper-red">0</b> 人 · 已评 <b id="desk-generated" class="text-green-600">0</b> 人</div>
+                <div class="progress-bar-track w-32 mt-1">
+                    <div class="progress-bar-fill" id="desk-progress" style="width:0%"></div>
+                </div>
+            </div>
+            <button id="btn-gen-desk" onclick="genAll()"
+                class="btn-red py-2 px-4 text-sm flex items-center gap-1.5"
+                {% if not ai_configured %}disabled{% endif %}>
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                AI 批量生成
+            </button>
+            <button id="btn-pub-desk" onclick="publish()"
+                class="btn-green py-2 px-4 text-sm flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                确认发布
+            </button>
+        </div>
+
+        <!-- 移动端状态 -->
+        <span class="text-xs text-gray-400 ml-auto shrink-0 md:hidden font-kaiti" id="top-status">加载中…</span>
+    </div>
+
+    {% if not ai_configured %}
+    <div class="max-w-5xl mx-auto px-4 pb-2.5">
+        <div class="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 font-kaiti">
+            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            未配置 AI 接口，AI 评语功能不可用。<a href="{{ url_for('admin_upload_page') }}" class="underline font-bold ml-1">前往设置 →</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ====== 主内容区 ====== -->
+<div class="max-w-5xl mx-auto px-4 pt-5">
+
+    <!-- 空状态 -->
+    <div id="empty-state" class="hidden text-center py-20">
+        <div class="inline-block border-2 border-paper-red rounded-full p-5 mb-5 text-paper-red">
+            <svg class="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+        </div>
+        <h3 class="text-xl font-bold text-gray-700 font-kaiti mb-2">暂无待审核记录</h3>
+        <p class="text-gray-400 text-sm mb-6 font-kaiti">请先上传包含学生成绩的 Excel 文件</p>
+        <a href="{{ url_for('admin_upload_page') }}" class="inline-flex items-center gap-2 btn-red py-2.5 px-6 text-sm">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            去上传 Excel
+        </a>
+    </div>
+
+    <!-- ===== 桌面端：报告册风格表格 ===== -->
+    <div id="desktop-view" class="hidden md:block">
+        <!-- 表格容器 -->
+        <div class="bg-white rounded-xl shadow overflow-hidden" style="border: 2px solid var(--paper-red);">
+            <!-- 表格标题行 -->
+            <div class="px-5 py-3 flex items-center justify-between border-b-2" style="border-color: var(--paper-red); background: #fff5f5;">
+                <h2 class="font-kaiti font-bold text-paper-red tracking-widest text-sm">学生期末评语审核表</h2>
+                <span class="text-xs text-paper-red font-kaiti" id="desk-subtitle">共 0 条待审核</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th class="w-8 font-kaiti">#</th>
+                            <th class="text-left font-kaiti">姓名</th>
+                            <th class="w-20 font-kaiti">职位</th>
+                            <th class="w-14 font-kaiti">语文</th>
+                            <th class="w-14 font-kaiti">数学</th>
+                            <th class="w-14 font-kaiti">英语</th>
+                            <th class="w-14 font-kaiti">科学</th>
+                            <th class="w-14 font-kaiti">道法</th>
+                            <th class="w-28 font-kaiti text-left">类型标签</th>
+                            <th class="text-left font-kaiti">期末评语</th>
+                            <th class="w-32 font-kaiti">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 移动端：分页卡片 ===== -->
+    <div id="mobile-view" class="md:hidden">
+        <!-- 筛选切换 -->
+        <div class="flex gap-2 mb-3" id="filter-pills">
+            <button onclick="setFilter('all')" class="filter-pill active" data-filter="all">全部 <span class="pill-count" id="pill-all">0</span></button>
+            <button onclick="setFilter('pending')" class="filter-pill" data-filter="pending">待评 <span class="pill-count" id="pill-pending">0</span></button>
+            <button onclick="setFilter('done')" class="filter-pill" data-filter="done">已评 <span class="pill-count" id="pill-done">0</span></button>
+        </div>
+        <!-- 分页导航 -->
+        <div class="flex items-center justify-between mb-4">
+            <button id="btn-prev" onclick="prevCard()" class="page-nav-btn disabled:opacity-30">&larr; 上一个</button>
+            <div class="text-sm font-bold text-gray-700 font-kaiti" id="page-indicator">1 / 0</div>
+            <button id="btn-next" onclick="nextCard()" class="page-nav-btn disabled:opacity-30">下一个 &rarr;</button>
+        </div>
+        <!-- 当前卡片 -->
+        <div id="card-slot" class="min-h-[400px]"></div>
+    </div>
+
+</div>
+
+<!-- ====== 移动端底部操作栏 ====== -->
+<div id="mobile-bar" class="md:hidden fixed bottom-0 left-0 right-0 z-20 bg-white/97 backdrop-blur border-t-2 shadow-lg" style="border-color: var(--paper-red);">
+    <div class="px-4 py-3 flex gap-2">
+        <button id="btn-gen-mob" onclick="genAll()"
+            class="btn-red flex-1 py-2.5 text-sm flex items-center justify-center gap-1.5"
+            {% if not ai_configured %}disabled{% endif %}>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            AI 批量生成
+        </button>
+        <button id="btn-pub-mob" onclick="publish()"
+            class="btn-green flex-1 py-2.5 text-sm flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            确认发布
+        </button>
+    </div>
+</div>
+
+<!-- ====== Toast ====== -->
+<div id="toast" class="hidden fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl text-sm font-bold shadow-xl font-kaiti border"></div>
+
+<!-- ====== 类型选择弹窗 ====== -->
+<div id="picker-overlay" class="hidden fixed inset-0 z-40 bg-black/20" onclick="closeTypePicker()"></div>
+<div id="picker-popover" class="hidden fixed z-50 bg-white rounded-2xl shadow-2xl p-5 w-72 max-w-[92vw] picker-pop" style="border-top: 3px solid var(--paper-red);">
+    <h3 class="text-sm font-bold text-gray-800 mb-3 font-kaiti">选择学生类型标签</h3>
+    <div class="flex flex-wrap gap-1.5 mb-4" id="picker-options"></div>
+    <div class="flex justify-end gap-2">
+        <button onclick="closeTypePicker()" class="btn-outline text-xs px-4 py-2">取消</button>
+        <button onclick="confirmTypePicker()" class="btn-red text-xs px-4 py-2">确定</button>
+    </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const toast = $('toast');
+let students = [], currentIdx = 0, filterMode = 'all', generatingAll = false;
+let pickerStudentId = null, pickerSelected = [];
+const TYPE_OPTIONS = {{ type_options | tojson | safe }};
+
+// ── Toast ──
+function showToast(msg, type) {
+    const colors = {
+        success: 'bg-green-50 text-green-800 border-green-300',
+        error:   'bg-red-50 text-paper-red border-red-300',
+        info:    'bg-gray-50 text-gray-800 border-gray-200'
+    };
+    toast.className = `fixed top-20 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl text-sm font-bold shadow-xl font-kaiti border ${colors[type] || colors.info}`;
+    toast.textContent = msg;
+    toast.classList.remove('hidden');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toast.classList.add('hidden'), 2500);
+}
+
+// ── Load ──
+async function loadData() {
+    try {
+        const res = await fetch('/api/review_data');
+        if (!res.ok) throw new Error('加载失败');
+        students = await res.json();
+        currentIdx = 0;
+        render();
+    } catch (e) { showToast('加载失败: ' + e.message, 'error'); }
+}
+
+function render() {
+    if (!students.length) {
+        $('empty-state').classList.remove('hidden');
+        $('desktop-view').style.display = 'none';
+        $('mobile-view').style.display = 'none';
+        $('mobile-bar').style.display = 'none';
+        updateCounts();
+        return;
+    }
+    $('empty-state').classList.add('hidden');
+    $('desktop-view').style.display = '';
+    $('mobile-view').style.display = '';
+    $('mobile-bar').style.display = '';
+    updateCounts();
+    renderDesktop();
+    renderMobile();
+}
+
+function updateCounts() {
+    const total = students.length;
+    let filled = 0;
+    students.forEach(s => { if (s.final_remarks && s.final_remarks.trim()) filled++; });
+    const pending = total - filled;
+    const pct = total ? Math.round((filled / total) * 100) : 0;
+
+    $('desk-total').textContent = total;
+    $('desk-generated').textContent = filled;
+    $('desk-progress').style.width = pct + '%';
+    const subtitleEl = $('desk-subtitle');
+    if (subtitleEl) subtitleEl.textContent = `共 ${total} 条 · 已评 ${filled} 条`;
+    $('top-status').textContent = total ? `${filled}/${total} 已评` : '暂无记录';
+
+    // Filter pills
+    $('pill-all').textContent = total;
+    $('pill-pending').textContent = pending;
+    $('pill-done').textContent = filled;
+}
+
+// ── 桌面表格 ──
+function renderDesktop() {
+    const body = $('table-body');
+    let html = '';
+    students.forEach((s, i) => {
+        const empty = !s.final_remarks || !s.final_remarks.trim();
+        const types = s.types || [];
+        html += `<tr class="border-b transition ${empty ? 'row-pending' : ''}">
+            <td class="text-center text-gray-400 text-xs" style="border-color: var(--paper-red)">${i + 1}</td>
+            <td class="font-bold font-kaiti" style="border-color: var(--paper-red)">
+                ${esc(s.student_name)}
+                ${empty ? '<span class="ml-1 text-[10px] text-amber-600 bg-amber-50 border border-amber-200 rounded px-1">待评</span>' : '<span class="ml-1 text-[10px] text-green-700 bg-green-50 border border-green-200 rounded px-1">已评</span>'}
+            </td>
+            <td class="text-gray-500 text-xs font-kaiti" style="border-color: var(--paper-red)">${esc(s.position || '—')}</td>
+            ${scoreTd(s.chinese_score)}${scoreTd(s.math_score)}${scoreTd(s.english_score)}${scoreTd(s.science_score)}${scoreTd(s.morality_score)}
+            <td class="px-2 py-2" style="border-color: var(--paper-red)">${typeTags(s.id, types, true)}</td>
+            <td class="px-2 py-2" style="border-color: var(--paper-red)">
+                <textarea id="rm-${s.id}" rows="2" class="remarks-input text-sm" placeholder="待填写…">${esc(s.final_remarks || '')}</textarea>
+            </td>
+            <td class="px-3 py-2" style="border-color: var(--paper-red)">
+                <div class="flex flex-col gap-1.5">
+                    <button onclick="genOne(${s.id})" class="btn-red text-xs py-1.5 px-3">AI 生成</button>
+                    <button onclick="saveOne(${s.id})" class="btn-outline text-xs py-1.5 px-3">保存</button>
+                </div>
+            </td>
+        </tr>`;
+    });
+    body.innerHTML = html;
+}
+
+function scoreTd(v) {
+    const cls = v == null ? 'text-gray-300' : v >= 90 ? 'text-green-700 font-bold' : v >= 60 ? 'text-gray-700' : 'text-red-600 font-bold';
+    return `<td class="text-center font-mono text-sm ${cls}" style="border-color: var(--paper-red)">${v ?? '—'}</td>`;
+}
+
+function typeTags(studentId, types, small = false) {
+    const sz = small ? 'text-[10px]' : 'text-xs';
+    let h = '<div class="flex flex-wrap gap-1 items-center">';
+    types.forEach(t => {
+        h += `<span class="type-tag ${sz}" onclick="event.stopPropagation();removeType(${studentId},'${esc(t)}')" title="点击移除">${esc(t)} <span style="font-size:10px">✕</span></span>`;
+    });
+    h += `<span class="type-tag-add ${sz}" onclick="event.stopPropagation();openTypePicker(${studentId}, event)">${types.length ? '+' : '+ 添加标签'}</span>`;
+    h += '</div>';
+    return h;
+}
+
+// ── 移动端卡片 ──
+function renderMobile() { refreshPills(); showCard(); }
+
+function getFilteredList() {
+    if (filterMode === 'pending') return students.filter(s => !s.final_remarks || !s.final_remarks.trim());
+    if (filterMode === 'done') return students.filter(s => s.final_remarks && s.final_remarks.trim());
+    return students;
+}
+
+function refreshPills() {
+    document.querySelectorAll('.filter-pill').forEach(el => {
+        el.classList.toggle('active', el.dataset.filter === filterMode);
+    });
+}
+
+function setFilter(mode) {
+    filterMode = mode;
+    currentIdx = 0;
+    refreshPills();
+    showCard();
+}
+
+function showCard() {
+    const list = getFilteredList();
+    if (!students.length) return;
+    if (!list.length) {
+        $('card-slot').innerHTML = `<div class="text-center py-16 text-gray-400 font-kaiti">
+            <div class="text-4xl mb-3">${filterMode === 'pending' ? '🎉' : '📭'}</div>
+            <p>${filterMode === 'pending' ? '所有评语已生成完毕' : '暂无该状态的记录'}</p>
+        </div>`;
+        $('page-indicator').textContent = '0 / 0';
+        $('btn-prev').disabled = true;
+        $('btn-next').disabled = true;
+        return;
+    }
+    if (currentIdx >= list.length) currentIdx = list.length - 1;
+
+    const s = list[currentIdx];
+    const empty = !s.final_remarks || !s.final_remarks.trim();
+    const total = list.length;
+    const types = s.types || [];
+
+    $('page-indicator').textContent = `${currentIdx + 1} / ${total}`;
+    $('btn-prev').disabled = currentIdx === 0;
+    $('btn-next').disabled = currentIdx >= total - 1;
+
+    $('card-slot').innerHTML = `
+    <div class="student-card card-enter ${empty ? 'card-pending' : ''}" id="card-${s.id}">
+
+        <!-- 卡片头 -->
+        <div class="px-5 py-4 flex items-center gap-3" style="border-bottom: 1px solid #fecaca;">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-calligraphy text-xl shrink-0" style="background: var(--paper-red);">
+                ${esc(s.student_name.charAt(0))}
+            </div>
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-bold text-gray-900 font-kaiti text-lg">${esc(s.student_name)}</span>
+                    ${s.position ? `<span class="text-xs px-2 py-0.5 rounded-full font-kaiti" style="background:#fff5f5;color:var(--paper-red);border:1px solid #fca5a5">${esc(s.position)}</span>` : ''}
+                    ${empty
+                        ? '<span class="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-kaiti">待评</span>'
+                        : '<span class="text-xs px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200 font-kaiti">已评</span>'
+                    }
+                </div>
+                <div class="text-xs text-gray-400 mt-0.5 font-kaiti">#${currentIdx + 1} / ${total}</div>
+            </div>
+        </div>
+
+        <!-- 成绩区 -->
+        <div class="px-5 py-3 grid grid-cols-5 gap-2" style="border-bottom: 1px solid #fecaca;">
+            ${scoreBadge('语文', s.chinese_score)}
+            ${scoreBadge('数学', s.math_score)}
+            ${scoreBadge('英语', s.english_score)}
+            ${scoreBadge('科学', s.science_score)}
+            ${scoreBadge('道法', s.morality_score)}
+        </div>
+
+        <!-- 类型标签 -->
+        <div class="px-5 py-2.5" style="border-bottom: 1px solid #fecaca;">
+            ${typeTags(s.id, types, false)}
+        </div>
+
+        <!-- 评语编辑 -->
+        <div class="px-5 py-3">
+            <label class="block text-xs text-paper-red font-kaiti font-bold mb-2">期末评语</label>
+            <textarea id="rm-${s.id}" rows="5" class="remarks-input"
+                placeholder="点击底部「AI 生成」或直接输入评语…">${esc(s.final_remarks || '')}</textarea>
+        </div>
+
+        <!-- 卡片操作 -->
+        <div class="px-5 pb-5 flex gap-3">
+            <button onclick="genOne(${s.id})" class="btn-red flex-1 py-3 text-sm flex items-center justify-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                AI 重新生成
+            </button>
+            <button onclick="saveOne(${s.id})" class="btn-outline flex-1 py-3 text-sm flex items-center justify-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                保存修改
+            </button>
+        </div>
+    </div>`;
+}
+
+function scoreBadge(label, v) {
+    const cls = v == null ? 'empty' : v >= 90 ? 'good' : v >= 60 ? 'ok' : 'bad';
+    return `<div class="score-badge ${cls}">
+        <span class="label">${label}</span>
+        <span class="value">${v ?? '—'}</span>
+    </div>`;
+}
+
+function prevCard() {
+    const list = getFilteredList();
+    if (currentIdx > 0) { currentIdx--; showCard(); }
+}
+function nextCard() {
+    const list = getFilteredList();
+    if (currentIdx < list.length - 1) { currentIdx++; showCard(); }
+}
+
+// ── 触屏滑动 ──
+let touchStartX = 0;
+$('card-slot').addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].clientX; });
+$('card-slot').addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 60) { diff > 0 ? nextCard() : prevCard(); }
+});
+
+// ── 类型选择器 ──
+function openTypePicker(studentId, event) {
+    pickerStudentId = studentId;
+    const student = students.find(s => s.id === studentId);
+    pickerSelected = [...(student.types || [])];
+    refreshPickerOptions();
+
+    const rect = event.target.getBoundingClientRect();
+    const popover = $('picker-popover');
+
+    popover.style.visibility = 'hidden';
+    popover.classList.remove('hidden');
+    const popW = popover.offsetWidth;
+    const popH = popover.offsetHeight;
+    popover.classList.add('hidden');
+    popover.style.visibility = '';
+
+    const left = Math.max(8, Math.min(rect.left, window.innerWidth - popW - 8));
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const top = spaceBelow >= popH + 16 ? rect.bottom + 6 : rect.top - popH - 6;
+    popover.style.left = left + 'px';
+    popover.style.top = top + 'px';
+
+    $('picker-overlay').classList.remove('hidden');
+    popover.classList.remove('hidden');
+}
+
+function refreshPickerOptions() {
+    let html = '';
+    TYPE_OPTIONS.forEach(t => {
+        const sel = pickerSelected.includes(t);
+        html += `<span class="type-tag ${sel ? '' : 'bg-white'} cursor-pointer select-none"
+            style="${sel ? '' : 'background:#fff;color:#6b7280;border-color:#d1d5db'}"
+            onclick="toggleTypeSelection('${esc(t)}')">${esc(t)}</span>`;
+    });
+    $('picker-options').innerHTML = html;
+}
+
+function toggleTypeSelection(type) {
+    const idx = pickerSelected.indexOf(type);
+    if (idx >= 0) pickerSelected.splice(idx, 1);
+    else pickerSelected.push(type);
+    refreshPickerOptions();
+}
+
+function closeTypePicker() {
+    $('picker-overlay').classList.add('hidden');
+    $('picker-popover').classList.add('hidden');
+    pickerStudentId = null;
+}
+
+async function confirmTypePicker() {
+    const id = pickerStudentId;
+    closeTypePicker();
+    if (!id) return;
+    await saveTypes(id, pickerSelected);
+}
+
+async function saveTypes(studentId, types) {
+    try {
+        const res = await fetch(`/api/update_types/${studentId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ types })
+        });
+        if (res.ok) {
+            const student = students.find(s => s.id === studentId);
+            if (student) student.types = types;
+            renderDesktop();
+            if (students[currentIdx] && students[currentIdx].id === studentId) showCard();
+        }
+    } catch (e) { showToast('保存标签失败', 'error'); }
+}
+
+async function removeType(studentId, type) {
+    const student = students.find(s => s.id === studentId);
+    if (!student) return;
+    const types = (student.types || []).filter(t => t !== type);
+    await saveTypes(studentId, types);
+}
+
+// ── 操作 ──
+async function genOne(id) {
+    const btn = event.target.closest('button');
+    const card = $(`card-${id}`);
+    const origText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> 生成中…';
+    try {
+        const res = await fetch(`/api/generate_comment/${id}`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            const idx = students.findIndex(s => s.id === id);
+            if (idx >= 0) students[idx].final_remarks = data.comment;
+            const ta = $(`rm-${id}`);
+            if (ta) ta.value = data.comment;
+            updateCounts();
+            renderDesktop();
+            showCard();
+            showToast('评语生成成功', 'success');
+        } else {
+            showToast(data.error || '生成失败', 'error');
+        }
+    } catch (e) { showToast('网络错误', 'error'); }
+    finally {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+    }
+}
+
+async function genAll() {
+    if (generatingAll || !students.length) return;
+    generatingAll = true;
+    const allBtns = document.querySelectorAll('#btn-gen-desk, #btn-gen-mob');
+    allBtns.forEach(b => { b.disabled = true; b.textContent = '生成中…'; });
+    showToast('正在批量生成评语，请稍候…', 'info');
+    try {
+        const res = await fetch('/api/generate_all_comments', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.results) {
+            let ok = 0, fail = 0;
+            data.results.forEach(r => {
+                if (r.success) {
+                    ok++;
+                    const idx = students.findIndex(s => s.id === r.id);
+                    if (idx >= 0) students[idx].final_remarks = r.comment;
+                    const ta = $(`rm-${r.id}`); if (ta) ta.value = r.comment;
+                } else { fail++; }
+            });
+            updateCounts();
+            renderDesktop();
+            currentIdx = 0;
+            showCard();
+            showToast(`完成：${ok} 条成功${fail ? '，' + fail + ' 条失败' : ''}`, fail ? 'error' : 'success');
+        } else {
+            showToast(data.error || '生成失败', 'error');
+        }
+    } catch (e) { showToast('网络错误', 'error'); }
+    finally {
+        generatingAll = false;
+        allBtns.forEach(b => {
+            b.disabled = false;
+            b.innerHTML = '<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> AI 批量生成';
+        });
+    }
+}
+
+async function saveOne(id) {
+    const btn = event.target.closest('button');
+    const ta = $(`rm-${id}`); if (!ta) return;
+    const origHTML = btn.innerHTML;
+    btn.disabled = true;
+    btn.textContent = '保存中…';
+    try {
+        const res = await fetch(`/api/update_comment/${id}`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ comment: ta.value })
+        });
+        if (res.ok) {
+            const idx = students.findIndex(s => s.id === id);
+            if (idx >= 0) students[idx].final_remarks = ta.value;
+            updateCounts();
+            renderDesktop();
+            showCard();
+            btn.textContent = '已保存 ✓';
+            showToast('评语已保存', 'success');
+            setTimeout(() => { btn.innerHTML = origHTML; btn.disabled = false; }, 1500);
+            return;
+        } else {
+            showToast('保存失败', 'error');
+        }
+    } catch (e) { showToast('网络错误', 'error'); }
+    btn.disabled = false;
+    btn.innerHTML = origHTML;
+}
+
+async function publish() {
+    if (!confirm('确认发布所有学生记录？\n发布后，家长即可通过姓名查询电子通知书。')) return;
+    const allBtns = document.querySelectorAll('#btn-pub-desk, #btn-pub-mob');
+    allBtns.forEach(b => { b.disabled = true; b.textContent = '发布中…'; });
+    try {
+        const res = await fetch('/api/publish', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showToast(`已发布 ${data.count} 条记录`, 'success');
+            setTimeout(() => { location.href = '{{ url_for("admin_upload_page") }}'; }, 1400);
+        } else {
+            showToast(data.error || '发布失败', 'error');
+        }
+    } catch (e) { showToast('网络错误', 'error'); }
+    finally { allBtns.forEach(b => { b.disabled = false; b.textContent = '确认发布'; }); }
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+// ── Init ──
+loadData();
+</script>
+</body>
+</html>

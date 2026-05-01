@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员登录</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='site.webmanifest') }}">
+    <script>
+      tailwind.config = {
+        theme: { extend: { colors: { 'paper-red': { DEFAULT: '#d93025', dark: '#b02318' } } } }
+      }
+    </script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 border-t-8 border-paper-red">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
+        <h1 class="text-2xl font-bold text-center text-paper-red mb-6 font-serif">管理员登录</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-4 p-3 rounded-md text-sm
+                        {% if category == 'error' %} bg-red-100 border-l-4 border-red-500 text-red-700 {% endif %}
+                        {% if category == 'success' %} bg-green-100 border-l-4 border-green-500 text-green-700 {% endif %}"
+                        role="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form method="POST" action="{{ url_for('admin_login') }}" class="space-y-5">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                <input type="text" name="username" id="username" required
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-paper-red focus:ring-1 focus:ring-paper-red transition-colors">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">密码</label>
+                <input type="password" name="password" id="password" required
+                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-paper-red focus:ring-1 focus:ring-paper-red transition-colors">
+            </div>
+            <div>
+                <button type="submit"
+                        class="w-full bg-paper-red hover:bg-paper-red-dark text-white font-semibold py-2.5 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-paper-red transition duration-150 ease-in-out shadow-md">
+                    登录系统
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

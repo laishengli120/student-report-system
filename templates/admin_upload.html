@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>教务管理后台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+    <style>
+        :root { --paper-red: #d93025; --paper-red-dark: #b02318; }
+
+        body { background-color: #f0f2f5; font-family: 'Noto Serif SC', serif; }
+        .font-kaiti { font-family: "KaiTi", "STKaiti", "楷体", "Noto Serif SC", serif; }
+        .font-calligraphy { font-family: 'Ma Shan Zheng', cursive; }
+
+        /* Card */
+        .admin-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        .card-header {
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 20px;
+            border-bottom: 1px solid #fecaca;
+            background: #fff5f5;
+        }
+        .card-header.gray {
+            border-bottom-color: #e5e7eb;
+            background: #f9fafb;
+        }
+        .card-header svg { color: var(--paper-red); flex-shrink: 0; }
+        .card-header.gray svg { color: #6b7280; }
+
+        /* Section accent lines */
+        .accent-red  { border-top: 4px solid var(--paper-red); }
+        .accent-gray { border-top: 4px solid #9ca3af; }
+
+        /* Underline inputs (matching parent_query style) */
+        .input-underline {
+            width: 100%;
+            border: none;
+            border-bottom: 2px solid #d1d5db;
+            background: #f9fafb;
+            border-radius: 4px 4px 0 0;
+            padding: 10px 12px;
+            font-family: "KaiTi", "STKaiti", "楷体", serif;
+            font-size: 0.95rem;
+            color: #374151;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .input-underline:focus {
+            border-bottom-color: var(--paper-red);
+            background: #fff9f9;
+        }
+        .input-underline::placeholder { color: #9ca3af; font-family: 'Noto Serif SC', serif; font-size: 0.85rem; }
+
+        /* Password input with eye toggle */
+        .input-underline[type="password"] { letter-spacing: 0.15em; }
+
+        /* Label */
+        .field-label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: bold;
+            color: var(--paper-red);
+            margin-bottom: 4px;
+            font-family: "KaiTi", "STKaiti", "楷体", serif;
+        }
+        .field-label.gray { color: #6b7280; }
+
+        /* File drop zone */
+        .drop-zone {
+            border: 2px dashed #fca5a5;
+            border-radius: 10px;
+            padding: 28px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            background: #fff;
+            position: relative;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--paper-red);
+            background: #fff9f9;
+        }
+        .drop-zone input[type="file"] {
+            position: absolute; inset: 0; width: 100%; height: 100%;
+            opacity: 0; cursor: pointer;
+        }
+
+        /* Template spec box */
+        .spec-box {
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            background: #fff5f5;
+            padding: 12px 16px;
+        }
+        .spec-box table { width: 100%; border-collapse: collapse; }
+        .spec-box td { padding: 4px 8px; font-size: 0.8rem; vertical-align: top; }
+        .spec-box td:first-child { color: var(--paper-red); font-weight: bold; font-family: "KaiTi", serif; white-space: nowrap; width: 80px; }
+        .spec-box td:last-child { color: #4b5563; }
+
+        /* AI Toggle */
+        .ai-toggle-row {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 14px 16px;
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+            background: #fff5f5;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .ai-toggle-row:hover { background: #fee2e2; }
+
+        /* Custom checkbox */
+        .custom-check {
+            width: 20px; height: 20px; border-radius: 5px;
+            border: 2px solid #fca5a5; flex-shrink: 0; margin-top: 1px;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.15s, border-color 0.15s;
+            background: #fff;
+        }
+        .custom-check.checked {
+            background: var(--paper-red);
+            border-color: var(--paper-red);
+        }
+        .custom-check svg { opacity: 0; transition: opacity 0.1s; }
+        .custom-check.checked svg { opacity: 1; }
+
+        /* Submit button */
+        .btn-submit {
+            width: 100%; padding: 13px;
+            background: var(--paper-red); color: #fff;
+            border-radius: 10px; border: none;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1rem; font-weight: bold;
+            cursor: pointer; transition: background 0.15s, transform 0.1s;
+            box-shadow: 0 4px 12px rgba(217,48,37,0.25);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-submit:hover { background: var(--paper-red-dark); }
+        .btn-submit:active { transform: scale(0.98); }
+
+        .btn-secondary {
+            width: 100%; padding: 11px;
+            background: #fff; color: #6b7280;
+            border-radius: 10px; border: 1px solid #e5e7eb;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 0.9rem; cursor: pointer;
+            transition: background 0.15s;
+        }
+        .btn-secondary:hover { background: #f9fafb; color: #374151; }
+
+        /* Flash messages */
+        .flash-success { background: #f0fdf4; border-left: 4px solid #22c55e; color: #166534; }
+        .flash-error   { background: #fff5f5; border-left: 4px solid var(--paper-red); color: var(--paper-red-dark); }
+
+        /* Divider with label */
+        .section-divider {
+            display: flex; align-items: center; gap: 12px;
+            margin: 4px 0 16px;
+        }
+        .section-divider span {
+            font-size: 0.72rem; color: #9ca3af;
+            white-space: nowrap; font-family: "KaiTi", serif;
+        }
+        .section-divider::before, .section-divider::after {
+            content: ''; flex: 1; height: 1px; background: #fecaca;
+        }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.25s ease-out both; }
+        .fade-in-2 { animation: fadeIn 0.3s ease-out 0.08s both; }
+        .fade-in-3 { animation: fadeIn 0.35s ease-out 0.16s both; }
+
+        /* Section tabs */
+        .section-tab { flex:1; text-align:center; padding:8px 0; border-radius:20px; font-size:0.8rem; font-family:"KaiTi",serif; background:#f3f4f6; color:#6b7280; border:none; cursor:pointer; transition:all 0.2s; }
+        .section-tab.active { background:var(--paper-red); color:#fff; font-weight:600; }
+        .section-card { display:none; }
+        .section-card.active { display:block; }
+
+        /* Filename chip */
+        .file-chip {
+            display: inline-flex; align-items: center; gap-6px;
+            background: #fff5f5; border: 1px solid #fca5a5;
+            border-radius: 20px; padding: 4px 12px;
+            font-size: 0.8rem; color: var(--paper-red);
+            font-family: monospace; max-width: 100%; overflow: hidden;
+            text-overflow: ellipsis; white-space: nowrap;
+        }
+    </style>
+</head>
+<body class="min-h-screen py-8 px-4 flex flex-col items-center">
+
+    <!-- ===== 页面标题 ===== -->
+    <div class="w-full max-w-lg mb-7 text-center fade-in">
+        <h1 class="text-2xl font-bold text-gray-900 font-kaiti tracking-widest">教务管理后台</h1>
+        <p class="text-gray-400 text-sm mt-1.5 font-kaiti">期末通知书发布系统</p>
+    </div>
+
+    <!-- ===== Flash 消息 ===== -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="w-full max-w-lg mb-5 space-y-2">
+            {% for category, message in messages %}
+                <div class="p-3.5 rounded-xl text-sm font-kaiti shadow-sm {{ 'flash-success' if category == 'success' else 'flash-error' }}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- ===== 功能切换 ===== -->
+    <div class="w-full max-w-lg mb-5 flex gap-2">
+        <button class="section-tab active" data-section="time" onclick="switchSection('time')">时间设置</button>
+        <button class="section-tab" data-section="ai" onclick="switchSection('ai')">AI 接口</button>
+        <button class="section-tab" data-section="upload" onclick="switchSection('upload')">上传成绩</button>
+    </div>
+
+    <!-- ===== 1. 通知书时间设置 ===== -->
+    <div class="admin-card accent-gray section-card active w-full max-w-lg mb-5 fade-in" data-section="time">
+        <div class="card-header gray">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h2 class="text-sm font-bold text-gray-700 font-kaiti tracking-wide">通知书时间设置</h2>
+        </div>
+        <form action="{{ url_for('admin_update_settings') }}" method="POST" class="p-5 space-y-5">
+            <div>
+                <label class="field-label gray">本学期放假时间</label>
+                <input type="text" name="holiday_start" value="{{ settings.get('holiday_start', '') }}"
+                       placeholder="例如：2026年1月31日" class="input-underline">
+            </div>
+            <div class="grid grid-cols-2 gap-5">
+                <div>
+                    <label class="field-label gray">下学期报到时间</label>
+                    <input type="text" name="next_term_report" value="{{ settings.get('next_term_report', '') }}"
+                           placeholder="例如：3月4日" class="input-underline">
+                </div>
+                <div>
+                    <label class="field-label gray">下学期正式上课</label>
+                    <input type="text" name="next_term_start" value="{{ settings.get('next_term_start', '') }}"
+                           placeholder="例如：3月5日" class="input-underline">
+                </div>
+            </div>
+            <button type="submit" class="btn-secondary">保存设置</button>
+        </form>
+    </div>
+
+    <!-- ===== 2. AI 接口设置 ===== -->
+    <div class="admin-card accent-gray section-card w-full max-w-lg mb-5 fade-in-2" data-section="ai">
+        <div class="card-header gray">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            <h2 class="text-sm font-bold text-gray-700 font-kaiti tracking-wide">AI 评语接口设置</h2>
+        </div>
+        <form action="{{ url_for('admin_update_ai_settings') }}" method="POST" class="p-5 space-y-5">
+            <div>
+                <label class="field-label gray">API 密钥</label>
+                <input type="password" name="ai_api_key" value="{{ settings.get('ai_api_key', '') }}"
+                       placeholder="sk-…" class="input-underline">
+            </div>
+            <div>
+                <label class="field-label gray">接口地址</label>
+                <input type="text" name="ai_base_url" value="{{ settings.get('ai_base_url', 'https://api.deepseek.com') }}"
+                       placeholder="https://api.deepseek.com" class="input-underline">
+            </div>
+            <div>
+                <label class="field-label gray">模型名称</label>
+                <input type="text" name="ai_model" value="{{ settings.get('ai_model', 'deepseek-v4-flash') }}"
+                       placeholder="deepseek-v4-flash" class="input-underline">
+            </div>
+            <p class="text-xs text-gray-400 font-kaiti">默认使用 DeepSeek API。支持所有 OpenAI 兼容接口，如通义千问、智谱 AI、OpenAI 等。</p>
+            <button type="submit" class="btn-secondary">保存 AI 设置</button>
+        </form>
+    </div>
+
+    <!-- ===== 3. 上传成绩 ===== -->
+    <div class="admin-card accent-red section-card w-full max-w-lg fade-in-3" data-section="upload">
+        <div class="card-header">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+            <h2 class="text-sm font-bold font-kaiti tracking-wide" style="color: var(--paper-red);">上传成绩 Excel</h2>
+        </div>
+
+        <form action="{{ url_for('admin_upload_page') }}" method="POST" enctype="multipart/form-data" class="p-5 space-y-5">
+
+            <!-- 文件拖拽区域 -->
+            <div>
+                <label class="field-label">选择文件</label>
+                <div class="drop-zone" id="drop-zone">
+                    <input type="file" name="excel_file" id="excel_file" required accept=".xlsx,.xls"
+                           onchange="onFileChange(this)">
+                    <div id="drop-default">
+                        <svg class="w-10 h-10 mx-auto mb-3" style="color:#fca5a5;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <p class="text-sm font-kaiti" style="color: var(--paper-red);">点击或拖拽 Excel 文件至此处</p>
+                        <p class="text-xs text-gray-400 mt-1 font-kaiti">支持 .xlsx / .xls 格式</p>
+                    </div>
+                    <div id="drop-selected" class="hidden">
+                        <svg class="w-8 h-8 mx-auto mb-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p class="text-sm text-green-700 font-kaiti font-bold mb-1">文件已选择</p>
+                        <span class="file-chip" id="file-name-chip">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Excel 模板说明 -->
+            <div>
+                <div class="section-divider"><span>Excel 表头要求</span></div>
+                <div class="spec-box">
+                    <table>
+                        <tr>
+                            <td>姓名 <span style="color:var(--paper-red)">*</span></td>
+                            <td>必填，用于家长查询</td>
+                        </tr>
+                        <tr>
+                            <td>职位</td>
+                            <td>可选，如：班长、学习委员</td>
+                        </tr>
+                        <tr>
+                            <td>语文 / 数学 / 英语</td>
+                            <td>期末各科成绩</td>
+                        </tr>
+                        <tr>
+                            <td>科学 / 道德与法治</td>
+                            <td>期末各科成绩</td>
+                        </tr>
+                        <tr>
+                            <td>期末评语</td>
+                            <td>可由 AI 自动生成或手动填写</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- AI 审核开关 -->
+            <div>
+                <div class="section-divider"><span>发布选项</span></div>
+                <label class="ai-toggle-row" for="use_ai_review">
+                    <div class="custom-check" id="check-visual">
+                        <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                    <input type="checkbox" name="use_ai_review" id="use_ai_review" value="1" class="sr-only">
+                    <div>
+                        <p class="text-sm font-bold font-kaiti" style="color: var(--paper-red);">启用 AI 评语审核</p>
+                        <p class="text-xs text-gray-500 mt-0.5 font-kaiti leading-relaxed">上传后进入审核页面，可让 AI 自动生成或逐条修改评语后再发布</p>
+                    </div>
+                </label>
+            </div>
+
+            <!-- 提交按钮 -->
+            <button type="submit" id="submit-btn" class="btn-submit">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+                <span id="submit-label">上传文件并直接发布</span>
+            </button>
+
+            <!-- 底部链接 -->
+            <div class="flex items-center justify-between pt-1">
+                <a href="{{ url_for('admin_review_page') }}" class="text-sm font-kaiti font-bold flex items-center gap-1 hover:underline" style="color: var(--paper-red);">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    查看待审核草稿
+                </a>
+                <a href="{{ url_for('admin_logout') }}" class="text-sm text-gray-400 hover:text-gray-600 font-kaiti underline">退出登录</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- 底部留白 -->
+    <div class="h-8"></div>
+
+<script>
+    // ── 功能切换 ──
+    function switchSection(name) {
+        document.querySelectorAll('.section-tab').forEach(el => {
+            el.classList.toggle('active', el.dataset.section === name);
+        });
+        document.querySelectorAll('.section-card').forEach(el => {
+            el.classList.toggle('active', el.dataset.section === name);
+        });
+    }
+
+    // ── 文件选择 ──
+    function onFileChange(input) {
+        const file = input.files[0];
+        const defaultView = document.getElementById('drop-default');
+        const selectedView = document.getElementById('drop-selected');
+        const chip = document.getElementById('file-name-chip');
+        if (file) {
+            defaultView.classList.add('hidden');
+            selectedView.classList.remove('hidden');
+            chip.textContent = file.name;
+        } else {
+            defaultView.classList.remove('hidden');
+            selectedView.classList.add('hidden');
+        }
+    }
+
+    // ── 拖拽 ──
+    const dropZone = document.getElementById('drop-zone');
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file) {
+            const input = document.getElementById('excel_file');
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            input.files = dt.files;
+            onFileChange(input);
+        }
+    });
+
+    // ── AI 审核开关 ──
+    const checkbox = document.getElementById('use_ai_review');
+    const checkVisual = document.getElementById('check-visual');
+    const submitLabel = document.getElementById('submit-label');
+    const submitBtn = document.getElementById('submit-btn');
+
+    function syncToggle() {
+        if (checkbox.checked) {
+            checkVisual.classList.add('checked');
+            submitLabel.textContent = '上传文件并进入审核';
+            submitBtn.style.background = '#7c3aed';
+            submitBtn.style.boxShadow = '0 4px 12px rgba(124,58,237,0.25)';
+        } else {
+            checkVisual.classList.remove('checked');
+            submitLabel.textContent = '上传文件并直接发布';
+            submitBtn.style.background = '';
+            submitBtn.style.boxShadow = '';
+        }
+    }
+
+    // Label click toggles checkbox
+    document.querySelector('label[for="use_ai_review"]').addEventListener('click', e => {
+        // Let default label behavior toggle checkbox, then sync
+        setTimeout(syncToggle, 0);
+    });
+
+    checkbox.addEventListener('change', syncToggle);
+</script>
+</body>
+</html>

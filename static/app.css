@@ -1,0 +1,11 @@
+/* ── 全校共享样式 ── */
+:root {
+    --paper-red: #d93025;
+    --paper-red-dark: #b02318;
+}
+
+/* Tailwind 扩展色 */
+.bg-paper-red { background-color: var(--paper-red); }
+.text-paper-red { color: var(--paper-red); }
+.border-paper-red { border-color: var(--paper-red); }
+.hover\:bg-paper-red-dark:hover { background-color: var(--paper-red-dark); }
