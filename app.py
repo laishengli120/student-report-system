@@ -493,17 +493,10 @@ def generate_single_comment_api(student_id):
     if not ai_config:
         return jsonify({'error': '请先在管理页面配置AI接口密钥。'}), 400
 
-    scores = {
-        '语文': student['chinese_score'],
-        '数学': student['math_score'],
-        '英语': student['english_score'],
-        '科学': student['science_score'],
-        '道德与法治': student['morality_score'],
-    }
     raw = (student['brief_description'] or '').strip()
     types = raw.split('|') if raw else []
     comment, error = generate_single_comment(
-        student['student_name'], student['position'], scores, types, ai_config
+        student['student_name'], student['position'], types, ai_config
     )
     if error:
         return jsonify({'error': error}), 500
@@ -534,17 +527,10 @@ def generate_all_comments_api():
     for i, student in enumerate(drafts):
         if i > 0:
             time.sleep(0.4)
-        scores = {
-            '语文': student['chinese_score'],
-            '数学': student['math_score'],
-            '英语': student['english_score'],
-            '科学': student['science_score'],
-            '道德与法治': student['morality_score'],
-        }
         raw = (student['brief_description'] or '').strip()
         types = raw.split('|') if raw else []
         comment, error = generate_single_comment(
-            student['student_name'], student['position'], scores, types, ai_config
+            student['student_name'], student['position'], types, ai_config
         )
         if comment:
             cursor.execute("""
