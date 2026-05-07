@@ -20,6 +20,7 @@ app.config['ALLOWED_EXTENSIONS'] = {'xlsx', 'xls'}
 
 DEFAULT_ADMIN_USERNAME = "admin"
 DEFAULT_ADMIN_PASSWORD = "admin123" 
+DEFAULT_GRADE_RULES = "90=优秀\n80=良好\n60=合格\n0=待努力"
 
 try:
     os.makedirs(app.instance_path, exist_ok=True)
@@ -86,7 +87,8 @@ def init_db(app_context=None):
             'next_term_start': '2026年3月5日',
             'ai_api_key': '',
             'ai_base_url': 'https://api.deepseek.com',
-            'ai_model': 'deepseek-v4-flash'
+            'ai_model': 'deepseek-v4-flash',
+            'grade_rules': DEFAULT_GRADE_RULES
         }
         for k, v in defaults.items():
             cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)", (k, v))
@@ -166,6 +168,53 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def parse_grade_rules(raw_rules, use_default=True):
+    rules = []
+    for line in (raw_rules or DEFAULT_GRADE_RULES).splitlines():
+        text = line.strip()
+        if not text:
+            continue
+        if '=' in text:
+            threshold_text, label = text.split('=', 1)
+        elif ':' in text:
+            threshold_text, label = text.split(':', 1)
+        else:
+            continue
+        try:
+            threshold = float(threshold_text.strip())
+        except ValueError:
+            continue
+        label = label.strip()
+        if label:
+            rules.append({'threshold': threshold, 'label': label})
+    if not rules and use_default:
+        rules = [
+            {'threshold': 90, 'label': '优秀'},
+            {'threshold': 80, 'label': '良好'},
+            {'threshold': 60, 'label': '合格'},
+            {'threshold': 0, 'label': '待努力'}
+        ]
+    return sorted(rules, key=lambda item: item['threshold'], reverse=True)
+
+def score_to_grade(score, rules):
+    if score is None:
+        return ''
+    try:
+        numeric_score = float(score)
+    except (TypeError, ValueError):
+        return ''
+    for rule in rules:
+        if numeric_score >= rule['threshold']:
+            return rule['label']
+    return rules[-1]['label'] if rules else ''
+
+def add_grade_fields(report_data, settings):
+    rules = parse_grade_rules(settings.get('grade_rules'))
+    score_fields = ['chinese_score', 'math_score', 'english_score', 'science_score', 'morality_score']
+    for field in score_fields:
+        report_data[f"{field.replace('_score', '')}_grade"] = score_to_grade(report_data.get(field), rules)
+    return report_data
+
 # --- Routes ---
 @app.route('/')
 def index():
@@ -200,6 +249,7 @@ def get_report_api():
         holiday_start = settings.get('holiday_start', '____年__月__日')
         next_term_report = settings.get('next_term_report', '____年__月__日')
         next_term_start = settings.get('next_term_start', '____年__月__日')
+        report_data = add_grade_fields(report_data, settings)
         # Auto-detect 寒假/暑假 from holiday_start month
         holiday_label = '寒假'
         import re
@@ -446,6 +496,25 @@ def admin_update_ai_settings():
         cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", (field, value))
     db.commit()
     flash('AI接口设置已更新！', 'success')
+    return redirect(url_for('admin_upload_page'))
+
+@app.route('/admin/grade_settings', methods=['POST'])
+@login_required
+def admin_update_grade_settings():
+    raw_rules = request.form.get('grade_rules', '').strip()
+    parsed_rules = parse_grade_rules(raw_rules, use_default=False)
+    if not raw_rules or not parsed_rules:
+        flash('等级规则不能为空，请按“分数=等级”的格式填写。', 'error')
+        return redirect(url_for('admin_upload_page'))
+
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+        ('grade_rules', raw_rules)
+    )
+    db.commit()
+    flash('分数等级映射规则已更新！', 'success')
     return redirect(url_for('admin_upload_page'))
 
 

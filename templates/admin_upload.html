@@ -219,6 +219,7 @@
     <!-- ===== 功能切换 ===== -->
     <div class="w-full max-w-lg mb-5 flex gap-2">
         <button class="section-tab active" data-section="time" onclick="switchSection('time')">时间设置</button>
+        <button class="section-tab" data-section="grade" onclick="switchSection('grade')">等级规则</button>
         <button class="section-tab" data-section="ai" onclick="switchSection('ai')">AI 接口</button>
         <button class="section-tab" data-section="upload" onclick="switchSection('upload')">上传成绩</button>
     </div>
@@ -253,7 +254,30 @@
         </form>
     </div>
 
-    <!-- ===== 2. AI 接口设置 ===== -->
+    <!-- ===== 2. 分数等级映射设置 ===== -->
+    <div class="admin-card accent-gray section-card w-full max-w-lg mb-5 fade-in-2" data-section="grade">
+        <div class="card-header gray">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-7 4h8m-9 4h5m-6 5h12a2 2 0 002-2V6.5L15.5 2H6a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+            <h2 class="text-sm font-bold text-gray-700 font-kaiti tracking-wide">家长端分数等级规则</h2>
+        </div>
+        <form action="{{ url_for('admin_update_grade_settings') }}" method="POST" class="p-5 space-y-4">
+            <div>
+                <label class="field-label gray">分数映射等级</label>
+                <textarea name="grade_rules" rows="5"
+                          class="input-underline"
+                          style="resize: vertical; line-height: 1.65;"
+                          placeholder="90=优秀&#10;80=良好&#10;60=合格&#10;0=待努力">{{ settings.get('grade_rules', '90=优秀\n80=良好\n60=合格\n0=待努力') }}</textarea>
+            </div>
+            <p class="text-xs text-gray-400 font-kaiti leading-relaxed">
+                每行一条规则，格式为“最低分=等级”。系统会从高到低匹配，家长查询页只显示等级，不显示原始分数。
+            </p>
+            <button type="submit" class="btn-secondary">保存等级规则</button>
+        </form>
+    </div>
+
+    <!-- ===== 3. AI 接口设置 ===== -->
     <div class="admin-card accent-gray section-card w-full max-w-lg mb-5 fade-in-2" data-section="ai">
         <div class="card-header gray">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -282,7 +306,7 @@
         </form>
     </div>
 
-    <!-- ===== 3. 上传成绩 ===== -->
+    <!-- ===== 4. 上传成绩 ===== -->
     <div class="admin-card accent-red section-card w-full max-w-lg fade-in-3" data-section="upload">
         <div class="card-header">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

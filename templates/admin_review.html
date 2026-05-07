@@ -22,8 +22,14 @@
         }
 
         /* Report-style table */
-        .report-table { width: 100%; border-collapse: collapse; border: 2px solid var(--paper-red); }
-        .report-table th, .report-table td { border: 1px solid var(--paper-red); padding: 8px 12px; }
+        .review-table-shell { border: 1px solid #efb4ad; }
+        .review-table-title { border-bottom: 1px solid #efb4ad; }
+        .report-table { width: 100%; border-collapse: collapse; border: 0; }
+        .report-table th, .report-table td { border: 1px solid #efb4ad; padding: 8px 12px; }
+        .report-table thead th { border-top: 0; }
+        .report-table th:first-child, .report-table td:first-child { border-left: 0; }
+        .report-table th:last-child, .report-table td:last-child { border-right: 0; }
+        .report-table tbody tr:last-child td { border-bottom: 0; }
         .report-table th { background-color: #fff5f5; color: var(--paper-red); font-weight: bold; text-align: center; font-size: 0.85rem; }
         .report-table td { font-size: 0.9rem; color: #333; vertical-align: middle; }
         .report-table tbody tr:hover { background-color: #fff9f9; }
@@ -175,9 +181,9 @@
     <!-- ===== 桌面端：报告册风格表格 ===== -->
     <div id="desktop-view" class="hidden md:block">
         <!-- 表格容器 -->
-        <div class="bg-white rounded-xl shadow overflow-hidden" style="border: 2px solid var(--paper-red);">
+        <div class="bg-white rounded-xl shadow overflow-hidden review-table-shell">
             <!-- 表格标题行 -->
-            <div class="px-5 py-3 flex items-center justify-between border-b-2" style="border-color: var(--paper-red); background: #fff5f5;">
+            <div class="px-5 py-3 flex items-center justify-between review-table-title" style="background: #fff5f5;">
                 <h2 class="font-kaiti font-bold text-paper-red tracking-widest text-sm">学生期末评语审核表</h2>
                 <span class="text-xs text-paper-red font-kaiti" id="desk-subtitle">共 0 条待审核</span>
             </div>
@@ -332,19 +338,19 @@ function renderDesktop() {
     students.forEach((s, i) => {
         const empty = !s.final_remarks || !s.final_remarks.trim();
         const types = s.types || [];
-        html += `<tr class="border-b transition ${empty ? 'row-pending' : ''}">
-            <td class="text-center text-gray-400 text-xs" style="border-color: var(--paper-red)">${i + 1}</td>
-            <td class="font-bold font-kaiti" style="border-color: var(--paper-red)">
+        html += `<tr class="transition ${empty ? 'row-pending' : ''}">
+            <td class="text-center text-gray-400 text-xs">${i + 1}</td>
+            <td class="font-bold font-kaiti">
                 ${esc(s.student_name)}
                 ${empty ? '<span class="ml-1 text-[10px] text-amber-600 bg-amber-50 border border-amber-200 rounded px-1">待评</span>' : '<span class="ml-1 text-[10px] text-green-700 bg-green-50 border border-green-200 rounded px-1">已评</span>'}
             </td>
-            <td class="text-gray-500 text-xs font-kaiti" style="border-color: var(--paper-red)">${esc(s.position || '—')}</td>
+            <td class="text-gray-500 text-xs font-kaiti">${esc(s.position || '—')}</td>
             ${scoreTd(s.chinese_score)}${scoreTd(s.math_score)}${scoreTd(s.english_score)}${scoreTd(s.science_score)}${scoreTd(s.morality_score)}
-            <td class="px-2 py-2" style="border-color: var(--paper-red)">${typeTags(s.id, types, true)}</td>
-            <td class="px-2 py-2" style="border-color: var(--paper-red)">
+            <td class="px-2 py-2">${typeTags(s.id, types, true)}</td>
+            <td class="px-2 py-2">
                 <textarea id="rm-${s.id}" rows="2" class="remarks-input text-sm" placeholder="待填写…">${esc(s.final_remarks || '')}</textarea>
             </td>
-            <td class="px-3 py-2" style="border-color: var(--paper-red)">
+            <td class="px-3 py-2">
                 <div class="flex flex-col gap-1.5">
                     <button onclick="genOne(${s.id})" class="btn-red text-xs py-1.5 px-3">AI 生成</button>
                     <button onclick="saveOne(${s.id})" class="btn-outline text-xs py-1.5 px-3">保存</button>
@@ -357,7 +363,7 @@ function renderDesktop() {
 
 function scoreTd(v) {
     const cls = v == null ? 'text-gray-300' : v >= 90 ? 'text-green-700 font-bold' : v >= 60 ? 'text-gray-700' : 'text-red-600 font-bold';
-    return `<td class="text-center font-mono text-sm ${cls}" style="border-color: var(--paper-red)">${v ?? '—'}</td>`;
+    return `<td class="text-center font-mono text-sm ${cls}">${v ?? '—'}</td>`;
 }
 
 function typeTags(studentId, types, small = false) {
