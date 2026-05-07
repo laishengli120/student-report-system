@@ -216,6 +216,29 @@ def add_grade_fields(report_data, settings):
     return report_data
 
 # --- Routes ---
+import subprocess
+import hmac
+import hashlib
+import os
+
+@app.route('/git-update', methods=['POST'])
+def git_update():
+  # 可选：验证 GitHub 签名
+  signature = request.headers.get('X-Hub-Signature-256')
+  secret = os.environ.get('GITHUB_WEBHOOK_SECRET', '').encode()
+  if secret:
+      expected = 'sha256=' + hmac.new(secret, request.data,
+hashlib.sha256).hexdigest()
+      if not hmac.compare_digest(signature, expected):
+          return 'Invalid signature', 403
+
+  # 执行 git pull
+  subprocess.run(['git', '-C', '/home/huangmengqian/student-report-system', 'pull',
+'origin', 'main'])
+  subprocess.run(['touch',
+'/var/www/huangmengqian_pythonanywhere_com_wsgi.py'])
+  return 'OK', 200
+
 @app.route('/')
 def index():
     return redirect(url_for('parent_query_page'))
