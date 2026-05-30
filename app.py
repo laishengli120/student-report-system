@@ -437,15 +437,16 @@ def admin_upload_page():
                 records_processed = 0
                 error_in_batch = False
 
+                if use_ai_review:
+                    cursor.execute("DELETE FROM student_reports WHERE status = 'draft'")
+
                 for index, row in df.iterrows():
                     try:
                         student_name = str(row['姓名']).strip()
                         if not student_name:
                             continue
 
-                        if use_ai_review:
-                            cursor.execute("DELETE FROM student_reports WHERE student_name = ? AND status = 'draft'", (student_name,))
-                        else:
+                        if not use_ai_review:
                             cursor.execute("DELETE FROM student_reports WHERE student_name = ?", (student_name,))
 
                         data_to_insert = {
@@ -485,7 +486,7 @@ def admin_upload_page():
                 else:
                     db.commit()
                     if use_ai_review:
-                        flash(f'文件上传成功！共处理了 {records_processed} 条学生记录，请审核并生成评语。', 'success')
+                        flash(f'文件上传成功！已按最新 Excel 覆盖审核草稿，共处理了 {records_processed} 条学生记录，请审核并生成评语。', 'success')
                     else:
                         flash(f'文件上传成功！共处理了 {records_processed} 条学生记录，已直接发布。', 'success')
 
