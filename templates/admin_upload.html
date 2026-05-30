@@ -360,6 +360,21 @@
         /* ================================================================
            SAFETY NOTICE EDITOR
            ================================================================ */
+        .safety-split {
+            --safety-editor-width: 52%;
+            --safety-panel-height: clamp(500px, calc(100vh - 320px), 680px);
+            --safety-panel-label-height: 28px;
+            --safety-panel-label-gap: 8px;
+        }
+        .safety-pane { min-width: 0; }
+        .safety-preview-toggle-row {
+            display: flex; align-items: center; gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        .safety-preview-pane { margin-top: 1rem; }
+        .safety-preview-heading,
+        .safety-resizer { display: none; }
+
         .safety-editor-textarea {
             width: 100%; min-height: 400px; border: 1px solid #fca5a5; border-radius: 8px;
             padding: 14px; font-family: "KaiTi", "STKaiti", "楷体", serif;
@@ -375,6 +390,15 @@
             max-height: 500px; overflow-y: auto;
             font-family: "KaiTi", "STKaiti", "楷体", serif;
         }
+
+        .safety-status {
+            border-radius: 10px; border: 1px solid #e5e7eb;
+            padding: 10px 12px; font-family: "KaiTi", "STKaiti", "楷体", serif;
+            font-size: 0.82rem; line-height: 1.6;
+        }
+        .safety-status-info { background: #f8fafc; color: #475569; border-color: #cbd5e1; }
+        .safety-status-success { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+        .safety-status-error { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
 
         .btn-ai-optimize {
             width: 100%; padding: 11px;
@@ -396,6 +420,69 @@
             transition: border-color 0.15s;
         }
         .template-select:focus { border-color: var(--paper-red); }
+
+        @media (min-width: 769px) {
+            .safety-split {
+                display: grid;
+                grid-template-columns: minmax(300px, var(--safety-editor-width)) 16px minmax(300px, 1fr);
+                align-items: stretch;
+            }
+            .safety-editor-pane,
+            .safety-preview-pane {
+                display: flex; flex-direction: column;
+                height: var(--safety-panel-height);
+                min-height: 0;
+            }
+            .safety-preview-pane { margin-top: 0; }
+            .safety-editor-pane .field-label,
+            .safety-preview-heading {
+                flex: 0 0 var(--safety-panel-label-height);
+                height: var(--safety-panel-label-height);
+                margin-bottom: var(--safety-panel-label-gap);
+                display: flex; align-items: center;
+            }
+            .safety-editor-textarea {
+                flex: 1; height: auto; min-height: 0;
+                resize: none; overflow-y: auto;
+                border-width: 1px; box-sizing: border-box;
+            }
+            .safety-preview-heading {
+                justify-content: space-between;
+                font-family: "KaiTi", "STKaiti", "楷体", serif;
+                font-size: 0.82rem; color: #6b7280;
+            }
+            .safety-preview-box {
+                flex: 1; height: auto; max-height: none; min-height: 0;
+                overflow-y: auto; border-width: 1px; border-color: #fca5a5;
+                box-sizing: border-box;
+            }
+            .safety-split .safety-preview-box.hidden {
+                display: block !important;
+            }
+            .safety-preview-toggle-row { display: none; }
+            .safety-resizer {
+                display: flex; align-items: center; justify-content: center;
+                width: 16px; padding: 0; border: 0; background: transparent;
+                cursor: col-resize;
+            }
+            .safety-resizer::before {
+                content: ""; display: block; width: 4px; height: 120px;
+                border-radius: 999px; background: #fecaca;
+                transition: background 0.15s, height 0.15s;
+            }
+            .safety-resizer:hover::before,
+            .safety-resizer:focus-visible::before {
+                height: 160px; background: var(--paper-red);
+            }
+            body.safety-resizing {
+                cursor: col-resize; user-select: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .safety-split { display: block; }
+            .safety-preview-pane { margin-top: 0; }
+        }
 
         /* Mobile sub-menu overlay */
         .submenu-overlay {
@@ -869,25 +956,38 @@
                     </select>
                 </div>
 
-                <div>
-                    <label class="field-label gray">告知书内容（HTML）</label>
-                    <textarea id="safety-editor" class="safety-editor-textarea"
-                        placeholder="在此编辑安全告知书 HTML 内容，或使用预设模板/AI 优化…"></textarea>
-                </div>
+                <div class="safety-split" id="safety-split">
+                    <div class="safety-pane safety-editor-pane">
+                        <label class="field-label gray">告知书内容（HTML / 要点）</label>
+                        <textarea id="safety-editor" class="safety-editor-textarea"
+                            placeholder="可编辑 HTML，也可只输入要点，如：交通安全、食品安全、防溺水，再点击 AI 优化…"></textarea>
+                    </div>
 
-                <div class="flex items-center gap-3">
-                    <label class="flex items-center gap-2 cursor-pointer select-none">
-                        <input type="checkbox" id="safety-preview-toggle" onchange="toggleSafetyPreview()" class="sr-only">
-                        <div class="custom-check" id="safety-preview-check">
-                            <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                            </svg>
+                    <button type="button" class="safety-resizer" id="safety-resizer"
+                        aria-label="拖动调整编辑区和预览区宽度" title="拖动调整宽度"></button>
+
+                    <div class="safety-preview-toggle-row">
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" id="safety-preview-toggle" onchange="toggleSafetyPreview()" class="sr-only">
+                            <div class="custom-check" id="safety-preview-check">
+                                <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </div>
+                            <span class="text-sm text-gray-600 font-kaiti">显示预览</span>
+                        </label>
+                    </div>
+
+                    <div class="safety-pane safety-preview-pane">
+                        <div class="safety-preview-heading">
+                            <span>实时预览</span>
+                            <span>拖动中线可调整宽度</span>
                         </div>
-                        <span class="text-sm text-gray-600 font-kaiti">显示预览</span>
-                    </label>
+                        <div id="safety-preview" class="safety-preview-box hidden"></div>
+                    </div>
                 </div>
 
-                <div id="safety-preview" class="safety-preview-box hidden"></div>
+                <div id="safety-status" class="safety-status hidden" aria-live="polite"></div>
 
                 <button onclick="aiOptimizeSafety()" id="btn-ai-safety" class="btn-ai-optimize">
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1214,6 +1314,98 @@
     // ================================================================
     let safetyLoaded = false;
     let safetyTemplates = {};
+    const safetySplitMedia = window.matchMedia('(min-width: 769px)');
+    const safetySplit = document.getElementById('safety-split');
+    const safetyResizer = document.getElementById('safety-resizer');
+    const safetyEditor = document.getElementById('safety-editor');
+
+    function isDesktopSafetySplit() {
+        return safetySplitMedia.matches;
+    }
+
+    function applySafetySplitRatio(ratio) {
+        if (!safetySplit) return;
+        const clamped = Math.min(68, Math.max(35, Number(ratio) || 52));
+        safetySplit.style.setProperty('--safety-editor-width', `${clamped}%`);
+        localStorage.setItem('safetySplitRatio', String(clamped));
+    }
+
+    function syncSafetyPreviewState() {
+        const preview = document.getElementById('safety-preview');
+        const check = document.getElementById('safety-preview-check');
+        if (!preview || !check) return;
+        if (isDesktopSafetySplit()) {
+            check.classList.add('checked');
+            refreshSafetyPreview(safetyEditor.value);
+            return;
+        }
+        if (preview.classList.contains('hidden')) {
+            check.classList.remove('checked');
+        }
+    }
+
+    function setSafetyStatus(message, type = 'info') {
+        const status = document.getElementById('safety-status');
+        if (!status) return;
+        if (!message) {
+            status.textContent = '';
+            status.className = 'safety-status hidden';
+            return;
+        }
+        status.textContent = message;
+        status.className = `safety-status safety-status-${type}`;
+    }
+
+    function refreshSafetyPreview(html) {
+        const preview = document.getElementById('safety-preview');
+        if (!preview || (preview.classList.contains('hidden') && !isDesktopSafetySplit())) return;
+        preview.innerHTML = html || '<p class="text-gray-400 font-kaiti">暂无内容</p>';
+    }
+
+    function setSafetyEditorContent(html) {
+        safetyEditor.value = html || '';
+        refreshSafetyPreview(safetyEditor.value);
+    }
+
+    function initSafetySplitResize() {
+        applySafetySplitRatio(localStorage.getItem('safetySplitRatio') || 52);
+        if (!safetySplit || !safetyResizer) return;
+
+        safetyResizer.addEventListener('pointerdown', function(e) {
+            if (!isDesktopSafetySplit()) return;
+            e.preventDefault();
+            document.body.classList.add('safety-resizing');
+            safetyResizer.setPointerCapture(e.pointerId);
+
+            function onMove(moveEvent) {
+                const rect = safetySplit.getBoundingClientRect();
+                const ratio = ((moveEvent.clientX - rect.left) / rect.width) * 100;
+                applySafetySplitRatio(ratio);
+            }
+
+            function onUp(upEvent) {
+                document.body.classList.remove('safety-resizing');
+                safetyResizer.releasePointerCapture(upEvent.pointerId);
+                window.removeEventListener('pointermove', onMove);
+                window.removeEventListener('pointerup', onUp);
+            }
+
+            window.addEventListener('pointermove', onMove);
+            window.addEventListener('pointerup', onUp);
+        });
+
+        safetySplitMedia.addEventListener('change', syncSafetyPreviewState);
+        window.addEventListener('resize', function() {
+            refreshSafetyPreview(safetyEditor.value);
+        });
+        syncSafetyPreviewState();
+    }
+
+    safetyEditor.addEventListener('input', function() {
+        refreshSafetyPreview(this.value);
+        setSafetyStatus('');
+    });
+    initSafetySplitResize();
 
     async function loadSafetyNotice() {
         safetyLoaded = true;
@@ -1221,7 +1413,7 @@
             const res = await fetch('/api/safety_notice');
             if (!res.ok) throw new Error('加载失败');
             const data = await res.json();
-            document.getElementById('safety-editor').value = data.html || '';
+            setSafetyEditorContent(data.html || '');
 
             safetyTemplates = data.templates || {};
             const sel = document.getElementById('safety-template-select');
@@ -1230,7 +1422,8 @@
                 sel.innerHTML += `<option value="${key}">${info.icon} ${info.name}</option>`;
             }
         } catch (e) {
-            document.getElementById('safety-editor').value = '加载失败，请刷新重试';
+            setSafetyEditorContent('加载失败，请刷新重试');
+            setSafetyStatus('安全告知书加载失败，请刷新页面后重试。', 'error');
         }
     }
 
@@ -1240,13 +1433,11 @@
             const res = await fetch(`/api/safety_notice_template/${key}`);
             if (!res.ok) throw new Error('加载失败');
             const data = await res.json();
-            document.getElementById('safety-editor').value = data.html || '';
-            if (!document.getElementById('safety-preview').classList.contains('hidden')) {
-                document.getElementById('safety-preview').innerHTML = data.html || '';
-            }
+            setSafetyEditorContent(data.html || '');
+            setSafetyStatus('已加载预设模板，可继续编辑或保存。', 'success');
             document.getElementById('safety-template-select').value = '';
         } catch (e) {
-            alert('加载模板失败');
+            setSafetyStatus('加载模板失败，请稍后重试。', 'error');
         }
     };
 
@@ -1284,15 +1475,13 @@
         const origHTML = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> AI 优化中…';
+        setSafetyStatus('AI 正在优化安全告知书文案，请稍候。', 'info');
 
         const currentText = document.getElementById('safety-editor').value;
         let season = '寒假';
         try {
-            const res = await fetch('/api/safety_notice');
-            const data = await res.json();
-            const html = data.html || '';
-            if (html.includes('暑假')) season = '暑假';
-            else if (html.includes('寒假')) season = '寒假';
+            if (currentText.includes('暑假')) season = '暑假';
+            else if (currentText.includes('寒假')) season = '寒假';
         } catch(e) {}
 
         try {
@@ -1302,14 +1491,15 @@
                 body: JSON.stringify({ season: season, current_text: currentText })
             });
             const data = await res.json();
-            if (res.ok && data.text) {
-                document.getElementById('safety-editor').value = data.text;
-                alert('AI 已生成优化文案，请检查并调整后保存。\n\n提示：如需生成带格式的 HTML，请使用预设模板功能。');
+            const optimizedText = data.text || data.html || '';
+            if (res.ok && optimizedText) {
+                setSafetyEditorContent(optimizedText);
+                setSafetyStatus('AI 已优化并更新到编辑框；如已打开预览，预览内容也已同步。请检查后保存。', 'success');
             } else {
-                alert(data.error || '优化失败，请确认已配置 AI 接口');
+                setSafetyStatus(data.error || '优化失败，请确认已配置 AI 接口。', 'error');
             }
         } catch (e) {
-            alert('网络错误');
+            setSafetyStatus('网络错误，暂时无法完成 AI 优化。', 'error');
         } finally {
             btn.disabled = false;
             btn.innerHTML = origHTML;
@@ -1319,10 +1509,14 @@
     window.toggleSafetyPreview = function() {
         const preview = document.getElementById('safety-preview');
         const check = document.getElementById('safety-preview-check');
+        if (isDesktopSafetySplit()) {
+            refreshSafetyPreview(safetyEditor.value);
+            return;
+        }
         if (preview.classList.contains('hidden')) {
             preview.classList.remove('hidden');
             check.classList.add('checked');
-            preview.innerHTML = document.getElementById('safety-editor').value || '<p class="text-gray-400 font-kaiti">暂无内容</p>';
+            refreshSafetyPreview(safetyEditor.value);
         } else {
             preview.classList.add('hidden');
             check.classList.remove('checked');

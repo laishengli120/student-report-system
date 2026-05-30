@@ -329,27 +329,25 @@ def render_safety_notice_html(template_data):
 SAFETY_OPTIMIZE_PROMPT = """你是一位资深的小学德育主任，正在优化《假期安全告知书》。
 
 要求：
-1. 保持告知书的正式、亲切的语调
-2. 语言简洁有力，适合家长阅读
-3. 覆盖以下安全领域：防溺水、交通、消防、食品、网络、极端天气、法治、家庭环境
-4. 如果季节信息明确（寒假/暑假），加入相应的季节性安全提示
-5. 每个安全领域用"标题：内容"的格式输出，标题简洁（6-10字），内容1-2句话
-6. 开头需要一个引导段落（40-60字），表达学校对学生假期安全的关怀
-7. 直接输出纯文本，每段之间用空行隔开，不要输出 markdown 标记
-8. 格式严格按照以下：
+1. 保持告知书正式、亲切、清晰，适合小学生家长阅读。
+2. 如果用户只输入了安全主题或大点，例如“交通安全、食品安全、防溺水”，请把这些要点扩写成完整告知书，并补足必要的学校安全提醒。
+3. 如果用户输入的是已有 HTML，请保留原有核心意思，优化语言和条目结构。
+4. 覆盖用户明确输入的全部要点；必要时补充防溺水、交通、消防、食品、网络、极端天气、法治与行为、家庭环境等重点。
+5. 如果季节信息明确（寒假/暑假），加入相应的季节性安全提示。
+6. 开头引导段落 40-80 字，每个安全条目标题简洁，内容 1-2 句话。
+7. 只输出可直接放入页面编辑框和预览区的 HTML 片段，不要输出 Markdown、代码块、解释说明或完整 html/body 标签。
+8. HTML 结构请尽量使用下面这种形式，便于系统现有样式展示：
 
-【标题】
-假期安全告知书
-【引导段落】
-为了让孩子们度过一个平安……（40-60字）
-【安全条目】（必须至少6条，每条一行）
-防溺水：……
-交通安全：……
-消防安全：……
-食品安全：……
-网络安全：……
-法治与行为安全：……
-家庭环境：……"""
+<div class="mb-6 border-2 border-paper-red rounded p-4 bg-red-50/20">
+  <div class="text-center mb-4">
+    <span class="bg-paper-red text-white px-6 py-1 rounded-full font-bold text-lg font-kaiti tracking-widest">假期安全告知书</span>
+  </div>
+  <p class="font-kaiti text-gray-800 mb-4 indent-8 leading-relaxed text-justify">引导段落</p>
+  <div class="space-y-4 font-kaiti text-sm sm:text-base text-gray-700 leading-relaxed">
+    <div><span class="font-bold text-paper-red text-lg">交通安全：</span><span class="text-gray-800">具体提醒。</span></div>
+    <div><span class="font-bold text-paper-red text-lg">食品安全：</span><span class="text-gray-800">具体提醒。</span></div>
+  </div>
+</div>"""
 
 
 def generate_safety_notice(ai_config, season='寒假', current_text=''):
@@ -359,7 +357,7 @@ def generate_safety_notice(ai_config, season='寒假', current_text=''):
 
     prompt = SAFETY_OPTIMIZE_PROMPT
     if current_text:
-        prompt += f'\n\n当前版本供参考：\n{current_text[:800]}'
+        prompt += f'\n\n当前输入可能是 HTML、正文草稿，也可能只是安全主题要点。请据此优化或扩写：\n{current_text[:1200]}'
     else:
         prompt += f'\n\n请针对{season}生成一份全新的安全告知书。'
 
@@ -375,9 +373,9 @@ def generate_safety_notice(ai_config, season='寒假', current_text=''):
                 model=ai_config['model'],
                 messages=[
                     {'role': 'system', 'content': prompt},
-                    {'role': 'user', 'content': f'请生成{"优化" if current_text else "一份全新的"}《假期安全告知书》（针对{season}）'}
+                    {'role': 'user', 'content': f'请生成{"优化并扩写" if current_text else "一份全新的"}《假期安全告知书》HTML（针对{season}）'}
                 ],
-                max_tokens=1200,
+                max_tokens=1800,
                 temperature=0.8,
                 extra_body={"thinking_mode": "non-thinking"},
             )
