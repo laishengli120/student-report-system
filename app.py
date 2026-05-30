@@ -438,7 +438,9 @@ def admin_upload_page():
                 error_in_batch = False
 
                 if use_ai_review:
-                    cursor.execute("DELETE FROM student_reports WHERE status = 'draft'")
+                    cursor.execute("DELETE FROM student_reports WHERE status IN ('draft', 'published')")
+                else:
+                    cursor.execute("DELETE FROM student_reports WHERE status = 'published'")
 
                 for index, row in df.iterrows():
                     try:
@@ -446,8 +448,10 @@ def admin_upload_page():
                         if not student_name:
                             continue
 
-                        if not use_ai_review:
-                            cursor.execute("DELETE FROM student_reports WHERE student_name = ?", (student_name,))
+                        if use_ai_review:
+                            cursor.execute("DELETE FROM student_reports WHERE student_name = ? AND status = 'draft'", (student_name,))
+                        else:
+                            cursor.execute("DELETE FROM student_reports WHERE student_name = ? AND status = 'published'", (student_name,))
 
                         data_to_insert = {
                             'student_name': student_name,
@@ -486,9 +490,9 @@ def admin_upload_page():
                 else:
                     db.commit()
                     if use_ai_review:
-                        flash(f'文件上传成功！已按最新 Excel 覆盖审核草稿，共处理了 {records_processed} 条学生记录，请审核并生成评语。', 'success')
+                        flash(f'文件上传成功！已按最新 Excel 覆盖审核草稿并重置旧签收数据，共处理了 {records_processed} 条学生记录，请审核并生成评语。', 'success')
                     else:
-                        flash(f'文件上传成功！共处理了 {records_processed} 条学生记录，已直接发布。', 'success')
+                        flash(f'文件上传成功！已按最新 Excel 重置签收看板，共处理了 {records_processed} 条学生记录，已直接发布。', 'success')
 
             except Exception as e:
                 flash(f'处理文件时发生未知错误: {str(e)}', 'error')
