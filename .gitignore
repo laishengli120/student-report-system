@@ -8,6 +8,7 @@ outputs/
 
 # Test fixtures
 test_students.xlsx
+generate_test_excel.py
 
 # Python virtual environment
 venv/
