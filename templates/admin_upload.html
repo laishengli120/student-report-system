@@ -621,7 +621,7 @@
             <p>期末通知书发布系统</p>
         </div>
         <nav class="sidebar-nav" id="sidebar-nav">
-            <button class="sidebar-nav-item" data-section="time" onclick="switchSection('time')">
+            <button class="sidebar-nav-item active" data-section="time" onclick="switchSection('time')">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 时间设置
             </button>
@@ -633,7 +633,7 @@
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
                 AI 接口
             </button>
-            <button class="sidebar-nav-item active" data-section="upload" onclick="switchSection('upload')">
+            <button class="sidebar-nav-item" data-section="upload" onclick="switchSection('upload')">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                 上传成绩
             </button>
@@ -662,11 +662,11 @@
          MOBILE BOTTOM NAV
          ============================================================ -->
     <nav class="bottom-nav" id="bottom-nav">
-        <button class="bottom-nav-item" data-section="settings-menu" onclick="openMobileSettings()">
+        <button class="bottom-nav-item active" data-section="settings-menu" onclick="openMobileSettings()">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
             设置
         </button>
-        <button class="bottom-nav-item active" data-section="upload" onclick="switchSection('upload')">
+        <button class="bottom-nav-item" data-section="upload" onclick="switchSection('upload')">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             上传
         </button>
@@ -747,7 +747,7 @@
         <!-- ================================================================
              SECTION 1 - 通知书时间设置
              ================================================================ -->
-        <div class="admin-card accent-gray section-card fade-in" data-section="time">
+        <div class="admin-card accent-gray section-card active fade-in" data-section="time">
             <div class="card-header gray">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -870,14 +870,14 @@
         <!-- ================================================================
              SECTION 4 - 上传成绩
              ================================================================ -->
-        <div class="admin-card accent-red section-card active fade-in" data-section="upload">
+        <div class="admin-card accent-red section-card fade-in" data-section="upload">
             <div class="card-header">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                 </svg>
                 <h2 class="text-sm font-bold font-kaiti tracking-wide" style="color: var(--paper-red);">上传成绩 Excel</h2>
             </div>
-            <form action="{{ url_for('admin_upload_page') }}" method="POST" enctype="multipart/form-data" class="p-5 space-y-5">
+            <form action="{{ url_for('admin_upload_page', section='upload') }}" method="POST" enctype="multipart/form-data" class="p-5 space-y-5">
                 <div>
                     <label class="field-label">选择文件</label>
                     <div class="drop-zone" id="drop-zone">
@@ -1096,26 +1096,61 @@
     //  SECTION SWITCHING
     // ================================================================
     const isMobile = () => window.innerWidth <= 768;
+    const sectionNames = ['time', 'grade', 'ai', 'upload', 'safety', 'signature'];
+    const settingsSections = ['time', 'grade', 'ai'];
 
-    function switchSection(name) {
+    function normalizeSection(name) {
+        const section = String(name || '').replace(/^#/, '').trim().toLowerCase();
+        return sectionNames.includes(section) ? section : 'time';
+    }
+
+    function setSectionHash(name) {
+        const section = normalizeSection(name);
+        const nextUrl = `${window.location.pathname}${window.location.search}#${section}`;
+        if (window.location.hash !== `#${section}`) {
+            window.history.replaceState(null, '', nextUrl);
+        }
+    }
+
+    function getInitialSection() {
+        const params = new URLSearchParams(window.location.search);
+        const sectionFromQuery = params.get('section');
+        if (sectionFromQuery !== null) {
+            const section = normalizeSection(sectionFromQuery);
+            params.delete('section');
+            const query = params.toString();
+            const nextUrl = `${window.location.pathname}${query ? `?${query}` : ''}#${section}`;
+            window.history.replaceState(null, '', nextUrl);
+            return section;
+        }
+        return normalizeSection(window.location.hash || 'time');
+    }
+
+    function switchSection(name, options = {}) {
+        const section = normalizeSection(name);
+        const bottomSection = settingsSections.includes(section) ? 'settings-menu' : section;
+        if (options.updateHash !== false) {
+            setSectionHash(section);
+        }
+
         // Update sidebar nav
         document.querySelectorAll('.sidebar-nav-item').forEach(el => {
-            el.classList.toggle('active', el.dataset.section === name);
+            el.classList.toggle('active', el.dataset.section === section);
         });
         // Update bottom nav
         document.querySelectorAll('.bottom-nav-item').forEach(el => {
-            el.classList.toggle('active', el.dataset.section === name);
+            el.classList.toggle('active', el.dataset.section === bottomSection);
         });
         // Show/hide section cards
         document.querySelectorAll('.section-card').forEach(el => {
-            el.classList.toggle('active', el.dataset.section === name);
+            el.classList.toggle('active', el.dataset.section === section);
         });
 
         // Lazy-load data
-        if (name === 'signature' && !sigAllData.length) {
+        if (section === 'signature' && !sigAllData.length) {
             loadSignatureData();
         }
-        if (name === 'safety' && !safetyLoaded) {
+        if (section === 'safety' && !safetyLoaded) {
             loadSafetyNotice();
         }
     }
@@ -1547,6 +1582,11 @@
     }
     window.addEventListener('resize', updateMobileHeader);
     updateMobileHeader();
+
+    window.addEventListener('hashchange', () => {
+        switchSection(window.location.hash || 'time', { updateHash: false });
+    });
+    switchSection(getInitialSection(), { updateHash: false });
 
     // ================================================================
     //  RESPONSIVE: close mobile submenu on resize to desktop

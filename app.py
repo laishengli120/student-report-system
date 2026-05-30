@@ -346,7 +346,7 @@ def submit_signature():
 @app.route('/admin', methods=['GET'])
 @login_required
 def admin_dashboard():
-    return redirect(url_for('admin_upload_page'))
+    return redirect(url_for('admin_upload_page', section='time'))
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -400,7 +400,7 @@ def admin_update_settings():
         db.rollback()
         flash(f'设置更新失败: {str(e)}', 'error')
         
-    return redirect(url_for('admin_upload_page'))
+    return redirect(url_for('admin_upload_page', section='time'))
 
 
 @app.route('/admin/upload', methods=['GET', 'POST'])
@@ -408,13 +408,14 @@ def admin_update_settings():
 def admin_upload_page():
     # Handle Upload POST
     if request.method == 'POST':
+        use_ai_review = request.form.get('use_ai_review') == '1'
         if 'excel_file' not in request.files:
             flash('未检测到文件部分。', 'error')
-            return redirect(request.url)
+            return redirect(url_for('admin_upload_page', section='upload'))
         file = request.files['excel_file']
         if file.filename == '':
             flash('未选择任何文件。', 'error')
-            return redirect(request.url)
+            return redirect(url_for('admin_upload_page', section='upload'))
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
@@ -429,14 +430,12 @@ def admin_upload_page():
                 missing_cols = [req_col for req_col in required_conceptual_cols if req_col not in actual_columns]
                 if missing_cols:
                     flash(f'Excel文件缺少核心列: {", ".join(missing_cols)}。', 'error')
-                    return redirect(request.url)
+                    return redirect(url_for('admin_upload_page', section='upload'))
 
                 db = get_db()
                 cursor = db.cursor()
                 records_processed = 0
                 error_in_batch = False
-
-                use_ai_review = request.form.get('use_ai_review') == '1'
 
                 for index, row in df.iterrows():
                     try:
@@ -501,10 +500,10 @@ def admin_upload_page():
             if use_ai_review:
                 return redirect(url_for('admin_review_page'))
             else:
-                return redirect(url_for('admin_upload_page'))
+                return redirect(url_for('admin_upload_page', section='upload'))
         else:
             flash('文件类型不被允许。', 'error')
-            return redirect(request.url)
+            return redirect(url_for('admin_upload_page', section='upload'))
     
     # Handle GET: Show Page + Settings
     db = get_db()
@@ -526,7 +525,7 @@ def admin_update_ai_settings():
         cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", (field, value))
     db.commit()
     flash('AI接口设置已更新！', 'success')
-    return redirect(url_for('admin_upload_page'))
+    return redirect(url_for('admin_upload_page', section='ai'))
 
 @app.route('/admin/grade_settings', methods=['POST'])
 @login_required
@@ -539,7 +538,7 @@ def admin_update_grade_settings():
     parsed_rules = parse_grade_rules(raw_rules, use_default=False)
     if not raw_rules or not parsed_rules:
         flash('等级规则不能为空，请按"分数=等级"的格式填写。', 'error')
-        return redirect(url_for('admin_upload_page'))
+        return redirect(url_for('admin_upload_page', section='grade'))
 
     db = get_db()
     cursor = db.cursor()
@@ -553,7 +552,7 @@ def admin_update_grade_settings():
     )
     db.commit()
     flash('分数等级映射规则已更新！', 'success')
-    return redirect(url_for('admin_upload_page'))
+    return redirect(url_for('admin_upload_page', section='grade'))
 
 
 # --- Review Page ---
