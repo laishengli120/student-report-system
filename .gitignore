@@ -10,6 +10,9 @@ outputs/
 test_students.xlsx
 generate_test_excel.py
 
+# Local documentation
+使用说明.md
+
 # Python virtual environment
 venv/
 .venv/
