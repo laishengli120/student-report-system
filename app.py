@@ -9,7 +9,9 @@ from werkzeug.utils import secure_filename
 from functools import wraps
 from datetime import datetime
 
-from ai_service import get_ai_config, generate_single_comment, TYPE_OPTIONS
+from ai_service import (get_ai_config, generate_single_comment, TYPE_OPTIONS,
+                        SAFETY_NOTICE_TEMPLATES, render_safety_notice_html,
+                        generate_safety_notice)
 
 # --- App Configuration ---
 app = Flask(__name__)
@@ -20,7 +22,7 @@ app.config['ALLOWED_EXTENSIONS'] = {'xlsx', 'xls'}
 
 DEFAULT_ADMIN_USERNAME = "admin"
 DEFAULT_ADMIN_PASSWORD = "admin123" 
-DEFAULT_GRADE_RULES = "90=优秀\n80=良好\n60=合格\n0=待努力"
+DEFAULT_GRADE_RULES = "90=A\n80=B\n60=C\n0=D"
 
 try:
     os.makedirs(app.instance_path, exist_ok=True)
@@ -88,7 +90,10 @@ def init_db(app_context=None):
             'ai_api_key': '',
             'ai_base_url': 'https://api.deepseek.com',
             'ai_model': 'deepseek-v4-flash',
-            'grade_rules': DEFAULT_GRADE_RULES
+            'grade_rules': DEFAULT_GRADE_RULES,
+            'safety_notice': render_safety_notice_html(SAFETY_NOTICE_TEMPLATES['winter']),
+            'safety_notice_template': 'winter',
+            'score_display_mode': 'grade_only',
         }
         for k, v in defaults.items():
             cursor.execute("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)", (k, v))
@@ -300,6 +305,8 @@ def get_report_api():
         """
         
         report_data['announcement_html'] = announcement_html
+        report_data['safety_notice_html'] = settings.get('safety_notice', '')
+        report_data['score_display_mode'] = settings.get('score_display_mode', 'grade_only')
         return jsonify(report_data)
     else:
         return jsonify({'error': f'未找到姓名为 "{student_name_query}" 的学生成绩信息。'}), 404
@@ -525,9 +532,13 @@ def admin_update_ai_settings():
 @login_required
 def admin_update_grade_settings():
     raw_rules = request.form.get('grade_rules', '').strip()
+    score_display_mode = request.form.get('score_display_mode', 'grade_only').strip()
+    if score_display_mode not in ('grade_only', 'score_only', 'both'):
+        score_display_mode = 'grade_only'
+
     parsed_rules = parse_grade_rules(raw_rules, use_default=False)
     if not raw_rules or not parsed_rules:
-        flash('等级规则不能为空，请按“分数=等级”的格式填写。', 'error')
+        flash('等级规则不能为空，请按"分数=等级"的格式填写。', 'error')
         return redirect(url_for('admin_upload_page'))
 
     db = get_db()
@@ -535,6 +546,10 @@ def admin_update_grade_settings():
     cursor.execute(
         "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
         ('grade_rules', raw_rules)
+    )
+    cursor.execute(
+        "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+        ('score_display_mode', score_display_mode)
     )
     db.commit()
     flash('分数等级映射规则已更新！', 'success')
@@ -672,6 +687,137 @@ def update_types_api(student_id):
     """, (type_str, student_id))
     db.commit()
     return jsonify({'success': True})
+
+
+@app.route('/api/signature_dashboard')
+@login_required
+def signature_dashboard():
+    """返回所有已发布学生的签收状态"""
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("""
+        SELECT id, student_name, position, signature_img, signed_at,
+               chinese_score, math_score, english_score, science_score, morality_score
+        FROM student_reports
+        WHERE status = 'published'
+        ORDER BY student_name
+    """)
+    rows = cursor.fetchall()
+    results = []
+    for row in rows:
+        d = dict(row)
+        d['signed'] = bool(d['signature_img'] and d['signature_img'].strip())
+        d['signed_at'] = str(d['signed_at']) if d['signed_at'] else None
+        # 不传完整的 base64 图片数据，只传缩略信息
+        sig = d.get('signature_img') or ''
+        if len(sig) > 200:
+            d['signature_thumb'] = sig[:80] + '…'
+            d['has_signature_img'] = True
+        else:
+            d['signature_thumb'] = sig
+            d['has_signature_img'] = bool(sig)
+        d.pop('signature_img', None)
+        results.append(d)
+    return jsonify({
+        'students': results,
+        'total': len(results),
+        'signed_count': sum(1 for r in results if r['signed']),
+        'unsigned_count': sum(1 for r in results if not r['signed'])
+    })
+
+
+@app.route('/api/signature_detail/<int:student_id>')
+@login_required
+def signature_detail(student_id):
+    """返回单个学生的完整签名图片"""
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute(
+        "SELECT id, student_name, signature_img, signed_at FROM student_reports WHERE id = ? AND status = 'published'",
+        (student_id,)
+    )
+    row = cursor.fetchone()
+    if not row:
+        return jsonify({'error': '找不到该学生记录'}), 404
+    d = dict(row)
+    d['signed'] = bool(d['signature_img'] and d['signature_img'].strip())
+    d['signed_at'] = str(d['signed_at']) if d['signed_at'] else None
+    return jsonify(d)
+
+
+# ── 安全告知书相关 API ──
+
+@app.route('/api/safety_notice')
+@login_required
+def get_safety_notice():
+    """获取当前安全告知书内容和模板列表"""
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT value FROM settings WHERE key = 'safety_notice'")
+    row = cursor.fetchone()
+    cursor.execute("SELECT value FROM settings WHERE key = 'safety_notice_template'")
+    tmpl_row = cursor.fetchone()
+    return jsonify({
+        'html': (row['value'] if row else ''),
+        'template': (tmpl_row['value'] if tmpl_row else 'winter'),
+        'templates': {k: {'name': v['name'], 'icon': v['icon']} for k, v in SAFETY_NOTICE_TEMPLATES.items()},
+    })
+
+
+@app.route('/api/safety_notice_template/<template_key>')
+@login_required
+def get_safety_notice_template(template_key):
+    """获取指定模板的渲染 HTML"""
+    tmpl = SAFETY_NOTICE_TEMPLATES.get(template_key)
+    if not tmpl:
+        return jsonify({'error': '模板不存在'}), 404
+    return jsonify({
+        'html': render_safety_notice_html(tmpl),
+        'template': template_key,
+        'meta': {'name': tmpl['name'], 'icon': tmpl['icon']},
+    })
+
+
+@app.route('/admin/safety_notice', methods=['POST'])
+@login_required
+def save_safety_notice():
+    """保存安全告知书内容"""
+    data = request.json
+    if not data:
+        data = request.form
+    html = (data.get('html') or data.get('safety_notice') or '').strip()
+    template_key = (data.get('template') or data.get('safety_notice_template') or 'custom').strip()
+
+    if not html:
+        flash('安全告知书内容不能为空', 'error')
+        return jsonify({'error': '内容不能为空'}), 400
+
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", ('safety_notice', html))
+    cursor.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", ('safety_notice_template', template_key))
+    db.commit()
+    return jsonify({'success': True, 'message': '安全告知书已保存'})
+
+
+@app.route('/api/optimize_safety_notice', methods=['POST'])
+@login_required
+def optimize_safety_notice():
+    """AI 优化安全告知书"""
+    data = request.json or {}
+    season = data.get('season', '寒假')
+    current_text = data.get('current_text', '')
+
+    db = get_db()
+    ai_config = get_ai_config(db)
+    if not ai_config:
+        return jsonify({'error': '请先在管理页面配置 AI 接口密钥'}), 400
+
+    result, error = generate_safety_notice(ai_config, season, current_text)
+    if error:
+        return jsonify({'error': error}), 500
+
+    return jsonify({'success': True, 'text': result})
 
 
 @app.route('/api/publish', methods=['POST'])

@@ -8,16 +8,151 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
     <style>
-        :root { --paper-red: #d93025; --paper-red-dark: #b02318; }
+        :root {
+            --paper-red: #d93025;
+            --paper-red-dark: #b02318;
+            --sidebar-w: 220px;
+        }
 
-        body { background-color: #f0f2f5; font-family: 'Noto Serif SC', serif; }
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Noto Serif SC', serif;
+            margin: 0;
+            /* desktop: offset for fixed sidebar */
+        }
         .font-kaiti { font-family: "KaiTi", "STKaiti", "楷体", "Noto Serif SC", serif; }
         .font-calligraphy { font-family: 'Ma Shan Zheng', cursive; }
 
-        /* Card */
+        /* ================================================================
+           DESKTOP SIDEBAR
+           ================================================================ */
+        .sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0; z-index: 40;
+            width: var(--sidebar-w);
+            background: #fff;
+            box-shadow: 2px 0 20px rgba(0,0,0,0.06);
+            display: flex; flex-direction: column;
+            overflow-y: auto;
+        }
+        .sidebar-logo {
+            padding: 24px 20px 18px;
+            border-bottom: 1px solid #fecaca;
+            text-align: center;
+        }
+        .sidebar-logo h1 {
+            font-size: 1.05rem; font-weight: bold; color: #1f2937;
+            font-family: "KaiTi", "STKaiti", "楷体", serif;
+            letter-spacing: 0.15em; margin: 0;
+        }
+        .sidebar-logo p {
+            font-size: 0.7rem; color: #9ca3af; margin: 4px 0 0;
+            font-family: "KaiTi", serif;
+        }
+
+        .sidebar-nav { flex: 1; padding: 10px 0; }
+        .sidebar-nav-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 11px 20px; margin: 2px 10px; border-radius: 10px;
+            font-size: 0.88rem; font-family: "KaiTi", "STKaiti", "楷体", serif;
+            color: #4b5563; cursor: pointer; transition: all 0.18s;
+            border: none; background: none; width: calc(100% - 20px);
+            text-align: left;
+        }
+        .sidebar-nav-item:hover { background: #f9fafb; color: #1f2937; }
+        .sidebar-nav-item.active {
+            background: #fff5f5; color: var(--paper-red); font-weight: bold;
+        }
+        .sidebar-nav-item svg { flex-shrink: 0; width: 18px; height: 18px; }
+        .sidebar-nav-item.active svg { color: var(--paper-red); }
+        .sidebar-nav-item .badge {
+            margin-left: auto; font-size: 0.65rem; padding: 2px 8px;
+            border-radius: 10px; background: #fef2f2; color: var(--paper-red);
+            font-family: "KaiTi", serif;
+        }
+
+        .sidebar-footer {
+            padding: 14px 20px; border-top: 1px solid #f3f4f6;
+        }
+        .sidebar-footer a {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.78rem; color: #9ca3af;
+            font-family: "KaiTi", serif; text-decoration: none;
+            transition: color 0.15s;
+        }
+        .sidebar-footer a:hover { color: #6b7280; }
+
+        /* ================================================================
+           MOBILE BOTTOM NAV
+           ================================================================ */
+        .bottom-nav {
+            display: none;
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+            background: #fff; border-top: 1px solid #f3f4f6;
+            padding: 6px 0 env(safe-area-inset-bottom, 8px);
+            box-shadow: 0 -2px 12px rgba(0,0,0,0.05);
+            justify-content: space-around; align-items: flex-start;
+        }
+        .bottom-nav-item {
+            display: flex; flex-direction: column; align-items: center; gap: 3px;
+            padding: 5px 4px; min-width: 0; flex: 1;
+            font-size: 0.62rem; font-family: "KaiTi", serif;
+            color: #9ca3af; background: none; border: none; cursor: pointer;
+            transition: color 0.18s;
+        }
+        .bottom-nav-item svg { width: 21px; height: 21px; flex-shrink: 0; }
+        .bottom-nav-item.active { color: var(--paper-red); font-weight: 600; }
+        .bottom-nav-item.active svg { color: var(--paper-red); }
+
+        /* ================================================================
+           MAIN CONTENT AREA
+           ================================================================ */
+        .main-content {
+            margin-left: var(--sidebar-w);
+            padding: 24px 28px 40px;
+            max-width: 960px;
+            min-height: 100vh;
+        }
+
+        /* ================================================================
+           STATS BAR (always visible on desktop)
+           ================================================================ */
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+            margin-bottom: 22px;
+        }
+        .stat-card {
+            background: #fff; border-radius: 12px; padding: 16px 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            display: flex; align-items: center; gap: 14px;
+            transition: box-shadow 0.2s;
+        }
+        .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .stat-card .stat-icon {
+            width: 42px; height: 42px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .stat-card .stat-num {
+            font-size: 1.5rem; font-weight: bold;
+            font-family: "KaiTi", "STKaiti", "楷体", serif;
+        }
+        .stat-card .stat-label {
+            font-size: 0.72rem; color: #6b7280;
+            font-family: "KaiTi", serif; margin-top: 2px;
+        }
+        .stat-total .stat-icon { background: #eff6ff; color: #2563eb; }
+        .stat-total .stat-num { color: #2563eb; }
+        .stat-signed .stat-icon { background: #f0fdf4; color: #16a34a; }
+        .stat-signed .stat-num { color: #16a34a; }
+        .stat-unsigned .stat-icon { background: #fff5f5; color: var(--paper-red); }
+        .stat-unsigned .stat-num { color: var(--paper-red); }
+
+        /* ================================================================
+           CARDS (shared)
+           ================================================================ */
         .admin-card {
             background: #fff;
-            border-radius: 12px;
+            border-radius: 14px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             overflow: hidden;
         }
@@ -33,41 +168,37 @@
         }
         .card-header svg { color: var(--paper-red); flex-shrink: 0; }
         .card-header.gray svg { color: #6b7280; }
+        .card-header h2 { margin: 0; }
 
-        /* Section accent lines */
+        .section-card { display: none; }
+        .section-card.active { display: block; }
+
         .accent-red  { border-top: 4px solid var(--paper-red); }
         .accent-gray { border-top: 4px solid #9ca3af; }
 
-        /* Underline inputs (matching parent_query style) */
+        /* ================================================================
+           FORM ELEMENTS (keeping existing style)
+           ================================================================ */
         .input-underline {
-            width: 100%;
-            border: none;
+            width: 100%; border: none;
             border-bottom: 2px solid #d1d5db;
             background: #f9fafb;
             border-radius: 4px 4px 0 0;
             padding: 10px 12px;
             font-family: "KaiTi", "STKaiti", "楷体", serif;
-            font-size: 0.95rem;
-            color: #374151;
-            outline: none;
-            transition: border-color 0.2s, background 0.2s;
+            font-size: 0.95rem; color: #374151;
+            outline: none; transition: border-color 0.2s, background 0.2s;
         }
         .input-underline:focus {
             border-bottom-color: var(--paper-red);
             background: #fff9f9;
         }
         .input-underline::placeholder { color: #9ca3af; font-family: 'Noto Serif SC', serif; font-size: 0.85rem; }
-
-        /* Password input with eye toggle */
         .input-underline[type="password"] { letter-spacing: 0.15em; }
 
-        /* Label */
         .field-label {
-            display: block;
-            font-size: 0.78rem;
-            font-weight: bold;
-            color: var(--paper-red);
-            margin-bottom: 4px;
+            display: block; font-size: 0.78rem; font-weight: bold;
+            color: var(--paper-red); margin-bottom: 4px;
             font-family: "KaiTi", "STKaiti", "楷体", serif;
         }
         .field-label.gray { color: #6b7280; }
@@ -75,13 +206,10 @@
         /* File drop zone */
         .drop-zone {
             border: 2px dashed #fca5a5;
-            border-radius: 10px;
-            padding: 28px 20px;
-            text-align: center;
-            cursor: pointer;
+            border-radius: 10px; padding: 28px 20px;
+            text-align: center; cursor: pointer;
             transition: border-color 0.2s, background 0.2s;
-            background: #fff;
-            position: relative;
+            background: #fff; position: relative;
         }
         .drop-zone:hover, .drop-zone.dragover {
             border-color: var(--paper-red);
@@ -92,31 +220,23 @@
             opacity: 0; cursor: pointer;
         }
 
-        /* Template spec box */
         .spec-box {
-            border: 1px solid #fecaca;
-            border-radius: 8px;
-            background: #fff5f5;
-            padding: 12px 16px;
+            border: 1px solid #fecaca; border-radius: 8px;
+            background: #fff5f5; padding: 12px 16px;
         }
         .spec-box table { width: 100%; border-collapse: collapse; }
         .spec-box td { padding: 4px 8px; font-size: 0.8rem; vertical-align: top; }
         .spec-box td:first-child { color: var(--paper-red); font-weight: bold; font-family: "KaiTi", serif; white-space: nowrap; width: 80px; }
         .spec-box td:last-child { color: #4b5563; }
 
-        /* AI Toggle */
         .ai-toggle-row {
             display: flex; align-items: flex-start; gap: 12px;
-            padding: 14px 16px;
-            border: 1px solid #fecaca;
-            border-radius: 10px;
-            background: #fff5f5;
-            cursor: pointer;
-            transition: background 0.15s;
+            padding: 14px 16px; border: 1px solid #fecaca;
+            border-radius: 10px; background: #fff5f5;
+            cursor: pointer; transition: background 0.15s;
         }
         .ai-toggle-row:hover { background: #fee2e2; }
 
-        /* Custom checkbox */
         .custom-check {
             width: 20px; height: 20px; border-radius: 5px;
             border: 2px solid #fca5a5; flex-shrink: 0; margin-top: 1px;
@@ -124,14 +244,10 @@
             transition: background 0.15s, border-color 0.15s;
             background: #fff;
         }
-        .custom-check.checked {
-            background: var(--paper-red);
-            border-color: var(--paper-red);
-        }
+        .custom-check.checked { background: var(--paper-red); border-color: var(--paper-red); }
         .custom-check svg { opacity: 0; transition: opacity 0.1s; }
         .custom-check.checked svg { opacity: 1; }
 
-        /* Submit button */
         .btn-submit {
             width: 100%; padding: 13px;
             background: var(--paper-red); color: #fff;
@@ -150,16 +266,13 @@
             background: #fff; color: #6b7280;
             border-radius: 10px; border: 1px solid #e5e7eb;
             font-family: 'Noto Serif SC', serif;
-            font-size: 0.9rem; cursor: pointer;
-            transition: background 0.15s;
+            font-size: 0.9rem; cursor: pointer; transition: background 0.15s;
         }
         .btn-secondary:hover { background: #f9fafb; color: #374151; }
 
-        /* Flash messages */
         .flash-success { background: #f0fdf4; border-left: 4px solid #22c55e; color: #166534; }
         .flash-error   { background: #fff5f5; border-left: 4px solid var(--paper-red); color: var(--paper-red-dark); }
 
-        /* Divider with label */
         .section-divider {
             display: flex; align-items: center; gap: 12px;
             margin: 4px 0 16px;
@@ -172,43 +285,239 @@
             content: ''; flex: 1; height: 1px; background: #fecaca;
         }
 
-        /* Animations */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-in { animation: fadeIn 0.25s ease-out both; }
-        .fade-in-2 { animation: fadeIn 0.3s ease-out 0.08s both; }
-        .fade-in-3 { animation: fadeIn 0.35s ease-out 0.16s both; }
-
-        /* Section tabs */
-        .section-tab { flex:1; text-align:center; padding:8px 0; border-radius:20px; font-size:0.8rem; font-family:"KaiTi",serif; background:#f3f4f6; color:#6b7280; border:none; cursor:pointer; transition:all 0.2s; }
-        .section-tab.active { background:var(--paper-red); color:#fff; font-weight:600; }
-        .section-card { display:none; }
-        .section-card.active { display:block; }
-
-        /* Filename chip */
         .file-chip {
-            display: inline-flex; align-items: center; gap-6px;
+            display: inline-flex; align-items: center; gap: 6px;
             background: #fff5f5; border: 1px solid #fca5a5;
             border-radius: 20px; padding: 4px 12px;
             font-size: 0.8rem; color: var(--paper-red);
             font-family: monospace; max-width: 100%; overflow: hidden;
             text-overflow: ellipsis; white-space: nowrap;
         }
+
+        /* ================================================================
+           SIGNATURE DASHBOARD
+           ================================================================ */
+        .sig-summary-bar { display: none; } /* desktop uses stats-grid instead */
+
+        .sig-filter-pill {
+            padding: 5px 14px; border-radius: 16px; font-size: 0.78rem;
+            font-family: "KaiTi", serif; background: #f3f4f6; color: #6b7280;
+            border: none; cursor: pointer; transition: all 0.2s;
+        }
+        .sig-filter-pill.active { background: var(--paper-red); color: #fff; font-weight: 600; }
+
+        .sig-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 14px; border-radius: 10px;
+            transition: background 0.15s; cursor: pointer;
+        }
+        .sig-row:hover { background: #f9fafb; }
+        .sig-row + .sig-row { border-top: 1px solid #f3f4f6; }
+        .sig-row .avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            font-family: "KaiTi", serif; font-size: 1rem; font-weight: bold; color: #fff;
+        }
+        .sig-row .avatar.signed-avatar { background: #16a34a; }
+        .sig-row .avatar.unsigned-avatar { background: #9ca3af; }
+        .sig-row .info { flex: 1; min-width: 0; }
+        .sig-row .info .name { font-weight: bold; font-family: "KaiTi", serif; color: #1f2937; font-size: 0.95rem; }
+        .sig-row .info .meta { font-size: 0.7rem; color: #9ca3af; margin-top: 1px; font-family: "KaiTi", serif; }
+        .sig-row .status-badge {
+            font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; font-family: "KaiTi", serif;
+            white-space: nowrap; flex-shrink: 0;
+        }
+        .status-signed { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+        .status-unsigned { background: #fff5f5; color: var(--paper-red); border: 1px solid #fecaca; }
+
+        .sig-modal-overlay {
+            position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.4);
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .sig-modal {
+            background: #fff; border-radius: 16px; width: 100%; max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden;
+        }
+        .sig-modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 20px; border-bottom: 1px solid #fecaca;
+            background: #fff5f5;
+        }
+        .sig-modal-body { padding: 20px; text-align: center; }
+        .sig-modal-body img {
+            max-width: 100%; max-height: 300px; border: 1px solid #e5e7eb;
+            border-radius: 8px; background: #fafafa; mix-blend-mode: multiply;
+        }
+        @keyframes modalIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+        .sig-modal-overlay { animation: modalIn 0.18s ease-out; }
+
+        .sig-empty {
+            text-align: center; padding: 32px 20px; color: #9ca3af;
+            font-family: "KaiTi", serif; font-size: 0.9rem;
+        }
+
+        /* ================================================================
+           SAFETY NOTICE EDITOR
+           ================================================================ */
+        .safety-editor-textarea {
+            width: 100%; min-height: 400px; border: 1px solid #fca5a5; border-radius: 8px;
+            padding: 14px; font-family: "KaiTi", "STKaiti", "楷体", serif;
+            font-size: 0.92rem; line-height: 1.85; color: #374151;
+            background: #fff; outline: none; resize: vertical;
+            transition: border-color 0.15s;
+        }
+        .safety-editor-textarea:focus { border-color: var(--paper-red); background: #fffcfc; }
+
+        .safety-preview-box {
+            border: 2px solid var(--paper-red); border-radius: 10px;
+            padding: 20px; background: #fff;
+            max-height: 500px; overflow-y: auto;
+            font-family: "KaiTi", "STKaiti", "楷体", serif;
+        }
+
+        .btn-ai-optimize {
+            width: 100%; padding: 11px;
+            background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff;
+            border-radius: 10px; border: none;
+            font-family: 'Noto Serif SC', serif;
+            font-size: 0.9rem; font-weight: bold;
+            cursor: pointer; transition: background 0.15s, transform 0.1s;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .btn-ai-optimize:hover { background: linear-gradient(135deg, #6d28d9, #5b21b6); }
+        .btn-ai-optimize:active { transform: scale(0.98); }
+        .btn-ai-optimize:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .template-select {
+            width: 100%; padding: 10px 14px; border: 1px solid #fca5a5;
+            border-radius: 10px; background: #fff; font-family: "KaiTi", serif;
+            font-size: 0.85rem; color: #374151; outline: none; cursor: pointer;
+            transition: border-color 0.15s;
+        }
+        .template-select:focus { border-color: var(--paper-red); }
+
+        /* Mobile sub-menu overlay */
+        .submenu-overlay {
+            display: none;
+            position: fixed; inset: 0; z-index: 45;
+            background: rgba(0,0,0,0.3);
+        }
+        .submenu-overlay.show { display: block; }
+        .submenu-sheet {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 46;
+            background: #fff; border-radius: 16px 16px 0 0;
+            padding: 8px 0 calc(70px + env(safe-area-inset-bottom, 0px));
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            transform: translateY(100%); transition: transform 0.25s ease-out;
+        }
+        .submenu-sheet.show { transform: translateY(0); }
+        .submenu-sheet .sheet-handle {
+            width: 36px; height: 4px; border-radius: 2px;
+            background: #d1d5db; margin: 8px auto 12px;
+        }
+        .submenu-sheet button {
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; padding: 13px 24px; border: none; background: none;
+            font-size: 0.9rem; font-family: "KaiTi", serif;
+            color: #374151; cursor: pointer; transition: background 0.12s;
+        }
+        .submenu-sheet button:hover { background: #f9fafb; }
+        .submenu-sheet button svg { flex-shrink: 0; width: 18px; height: 18px; color: #6b7280; }
+
+        /* Display mode radio cards */
+        .display-mode-option.active {
+            border-color: var(--paper-red) !important;
+            background: #fff5f5 !important;
+        }
+        .display-mode-option.active p:first-child { color: var(--paper-red) !important; }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.25s ease-out both; }
+
+        /* ================================================================
+           RESPONSIVE - MOBILE
+           ================================================================ */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .bottom-nav { display: flex; }
+            .main-content {
+                margin-left: 0;
+                padding: 16px 14px 100px;
+                max-width: 100%;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr); gap: 8px;
+                margin-bottom: 14px;
+            }
+            .stat-card {
+                padding: 12px 10px; gap: 8px;
+                border-radius: 10px;
+            }
+            .stat-card .stat-icon {
+                width: 32px; height: 32px; border-radius: 8px;
+            }
+            .stat-card .stat-icon svg { width: 16px; height: 16px; }
+            .stat-card .stat-num { font-size: 1.2rem; }
+            .stat-card .stat-label { font-size: 0.65rem; }
+
+            .safety-editor-textarea { min-height: 300px; }
+            .flash-toast {
+                left: 14px; right: 14px; top: 12px;
+                max-width: none;
+            }
+
+            /* Login link inline in mobile */
+            .mobile-logout-link {
+                display: flex; justify-content: center;
+                padding: 8px 0 4px;
+            }
+            .mobile-logout-link a {
+                font-size: 0.72rem; color: #9ca3af;
+                font-family: "KaiTi", serif; text-decoration: none;
+            }
+        }
+        @media (min-width: 769px) {
+            .mobile-logout-link { display: none; }
+            .bottom-nav { display: none; }
+        }
+
+        /* Floating flash toasts */
+        .flash-toast {
+            position: fixed; top: 16px; left: calc(var(--sidebar-w) + 28px);
+            right: 28px; z-index: 50; max-width: 700px;
+            pointer-events: none;
+        }
+        .flash-toast > * { pointer-events: auto; }
+
+        /* Flash message animations */
+        @keyframes flashSlideIn {
+            from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes flashFadeOut {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to   { opacity: 0; transform: translateY(-8px) scale(0.97); }
+        }
+        .flash-msg {
+            animation: flashSlideIn 0.3s ease-out both;
+        }
+        .flash-msg.dismissing {
+            animation: flashFadeOut 0.35s ease-in forwards;
+        }
     </style>
 </head>
-<body class="min-h-screen py-8 px-4 flex flex-col items-center">
+<body>
 
-    <!-- ===== 页面标题 ===== -->
-    <div class="w-full max-w-lg mb-7 text-center fade-in">
-        <h1 class="text-2xl font-bold text-gray-900 font-kaiti tracking-widest">教务管理后台</h1>
-        <p class="text-gray-400 text-sm mt-1.5 font-kaiti">期末通知书发布系统</p>
-    </div>
-
-    <!-- ===== Flash 消息 ===== -->
+    <!-- ============================================================
+         FLASH MESSAGES (floating toast, auto-dismiss 2s)
+         ============================================================ -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-        <div class="w-full max-w-lg mb-5 space-y-2">
+        <div class="flash-toast space-y-2" id="flash-container">
             {% for category, message in messages %}
-                <div class="p-3.5 rounded-xl text-sm font-kaiti shadow-sm {{ 'flash-success' if category == 'success' else 'flash-error' }}" role="alert">
+                <div class="flash-msg p-3.5 rounded-xl text-sm font-kaiti shadow-sm {{ 'flash-success' if category == 'success' else 'flash-error' }}" role="alert">
                     {{ message }}
                 </div>
             {% endfor %}
@@ -216,211 +525,508 @@
         {% endif %}
     {% endwith %}
 
-    <!-- ===== 功能切换 ===== -->
-    <div class="w-full max-w-lg mb-5 flex gap-2">
-        <button class="section-tab active" data-section="time" onclick="switchSection('time')">时间设置</button>
-        <button class="section-tab" data-section="grade" onclick="switchSection('grade')">等级规则</button>
-        <button class="section-tab" data-section="ai" onclick="switchSection('ai')">AI 接口</button>
-        <button class="section-tab" data-section="upload" onclick="switchSection('upload')">上传成绩</button>
+    <!-- ============================================================
+         DESKTOP SIDEBAR
+         ============================================================ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <h1>教务管理后台</h1>
+            <p>期末通知书发布系统</p>
+        </div>
+        <nav class="sidebar-nav" id="sidebar-nav">
+            <button class="sidebar-nav-item" data-section="time" onclick="switchSection('time')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                时间设置
+            </button>
+            <button class="sidebar-nav-item" data-section="grade" onclick="switchSection('grade')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-7 4h8m-9 4h5m-6 5h12a2 2 0 002-2V6.5L15.5 2H6a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                等级规则
+            </button>
+            <button class="sidebar-nav-item" data-section="ai" onclick="switchSection('ai')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                AI 接口
+            </button>
+            <button class="sidebar-nav-item active" data-section="upload" onclick="switchSection('upload')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                上传成绩
+            </button>
+            <button class="sidebar-nav-item" data-section="safety" onclick="switchSection('safety')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                安全告知书
+            </button>
+            <button class="sidebar-nav-item" data-section="signature" onclick="switchSection('signature')">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                签收看板
+            </button>
+        </nav>
+        <div class="sidebar-footer">
+            <a href="{{ url_for('admin_review_page') }}">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                待审核草稿
+            </a>
+            <a href="{{ url_for('admin_logout') }}" style="margin-top: 8px;">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                退出登录
+            </a>
+        </div>
+    </aside>
+
+    <!-- ============================================================
+         MOBILE BOTTOM NAV
+         ============================================================ -->
+    <nav class="bottom-nav" id="bottom-nav">
+        <button class="bottom-nav-item" data-section="settings-menu" onclick="openMobileSettings()">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            设置
+        </button>
+        <button class="bottom-nav-item active" data-section="upload" onclick="switchSection('upload')">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            上传
+        </button>
+        <button class="bottom-nav-item" data-section="safety" onclick="switchSection('safety')">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            告知书
+        </button>
+        <button class="bottom-nav-item" data-section="signature" onclick="switchSection('signature')">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            签收
+        </button>
+    </nav>
+
+    <!-- Mobile settings submenu -->
+    <div class="submenu-overlay" id="submenu-overlay" onclick="closeMobileSettings()"></div>
+    <div class="submenu-sheet" id="submenu-sheet">
+        <div class="sheet-handle"></div>
+        <button onclick="switchSection('time'); closeMobileSettings();">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            通知书时间设置
+        </button>
+        <button onclick="switchSection('grade'); closeMobileSettings();">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-7 4h8m-9 4h5m-6 5h12a2 2 0 002-2V6.5L15.5 2H6a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            分数等级规则
+        </button>
+        <button onclick="switchSection('ai'); closeMobileSettings();">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            AI 评语接口
+        </button>
+        <div style="height: 12px;"></div>
+        <div class="mobile-logout-link">
+            <a href="{{ url_for('admin_review_page') }}" style="margin-right: 16px;">待审核草稿</a>
+            <a href="{{ url_for('admin_logout') }}">退出登录</a>
+        </div>
     </div>
 
-    <!-- ===== 1. 通知书时间设置 ===== -->
-    <div class="admin-card accent-gray section-card active w-full max-w-lg mb-5 fade-in" data-section="time">
-        <div class="card-header gray">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            <h2 class="text-sm font-bold text-gray-700 font-kaiti tracking-wide">通知书时间设置</h2>
+    <!-- ============================================================
+         MAIN CONTENT
+         ============================================================ -->
+    <main class="main-content" id="main-content">
+
+        <!-- ── Mobile header ── -->
+        <div class="mobile-header" style="display:none; text-align:center; margin-bottom:16px;">
+            <h1 class="text-lg font-bold text-gray-900 font-kaiti tracking-widest">教务管理后台</h1>
         </div>
-        <form action="{{ url_for('admin_update_settings') }}" method="POST" class="p-5 space-y-5">
-            <div>
-                <label class="field-label gray">本学期放假时间</label>
-                <input type="text" name="holiday_start" value="{{ settings.get('holiday_start', '') }}"
-                       placeholder="例如：2026年1月31日" class="input-underline">
-            </div>
-            <div class="grid grid-cols-2 gap-5">
-                <div>
-                    <label class="field-label gray">下学期报到时间</label>
-                    <input type="text" name="next_term_report" value="{{ settings.get('next_term_report', '') }}"
-                           placeholder="例如：3月4日" class="input-underline">
+
+        <!-- ── Stats Bar (always visible) ── -->
+        <div class="stats-grid fade-in" id="stats-bar">
+            <div class="stat-card stat-total">
+                <div class="stat-icon">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 </div>
                 <div>
-                    <label class="field-label gray">下学期正式上课</label>
-                    <input type="text" name="next_term_start" value="{{ settings.get('next_term_start', '') }}"
-                           placeholder="例如：3月5日" class="input-underline">
+                    <div class="stat-num" id="stat-total">—</div>
+                    <div class="stat-label">已发布学生</div>
                 </div>
             </div>
-            <button type="submit" class="btn-secondary">保存设置</button>
-        </form>
-    </div>
-
-    <!-- ===== 2. 分数等级映射设置 ===== -->
-    <div class="admin-card accent-gray section-card w-full max-w-lg mb-5 fade-in-2" data-section="grade">
-        <div class="card-header gray">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-7 4h8m-9 4h5m-6 5h12a2 2 0 002-2V6.5L15.5 2H6a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-            </svg>
-            <h2 class="text-sm font-bold text-gray-700 font-kaiti tracking-wide">家长端分数等级规则</h2>
-        </div>
-        <form action="{{ url_for('admin_update_grade_settings') }}" method="POST" class="p-5 space-y-4">
-            <div>
-                <label class="field-label gray">分数映射等级</label>
-                <textarea name="grade_rules" rows="5"
-                          class="input-underline"
-                          style="resize: vertical; line-height: 1.65;"
-                          placeholder="90=优秀&#10;80=良好&#10;60=合格&#10;0=待努力">{{ settings.get('grade_rules', '90=优秀\n80=良好\n60=合格\n0=待努力') }}</textarea>
-            </div>
-            <p class="text-xs text-gray-400 font-kaiti leading-relaxed">
-                每行一条规则，格式为“最低分=等级”。系统会从高到低匹配，家长查询页只显示等级，不显示原始分数。
-            </p>
-            <button type="submit" class="btn-secondary">保存等级规则</button>
-        </form>
-    </div>
-
-    <!-- ===== 3. AI 接口设置 ===== -->
-    <div class="admin-card accent-gray section-card w-full max-w-lg mb-5 fade-in-2" data-section="ai">
-        <div class="card-header gray">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-            </svg>
-            <h2 class="text-sm font-bold text-gray-700 font-kaiti tracking-wide">AI 评语接口设置</h2>
-        </div>
-        <form action="{{ url_for('admin_update_ai_settings') }}" method="POST" class="p-5 space-y-5">
-            <div>
-                <label class="field-label gray">API 密钥</label>
-                <input type="password" name="ai_api_key" value="{{ settings.get('ai_api_key', '') }}"
-                       placeholder="sk-…" class="input-underline">
-            </div>
-            <div>
-                <label class="field-label gray">接口地址</label>
-                <input type="text" name="ai_base_url" value="{{ settings.get('ai_base_url', 'https://api.deepseek.com') }}"
-                       placeholder="https://api.deepseek.com" class="input-underline">
-            </div>
-            <div>
-                <label class="field-label gray">模型名称</label>
-                <input type="text" name="ai_model" value="{{ settings.get('ai_model', 'deepseek-v4-flash') }}"
-                       placeholder="deepseek-v4-flash" class="input-underline">
-            </div>
-            <p class="text-xs text-gray-400 font-kaiti">默认使用 DeepSeek API。支持所有 OpenAI 兼容接口，如通义千问、智谱 AI、OpenAI 等。</p>
-            <button type="submit" class="btn-secondary">保存 AI 设置</button>
-        </form>
-    </div>
-
-    <!-- ===== 4. 上传成绩 ===== -->
-    <div class="admin-card accent-red section-card w-full max-w-lg fade-in-3" data-section="upload">
-        <div class="card-header">
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-            </svg>
-            <h2 class="text-sm font-bold font-kaiti tracking-wide" style="color: var(--paper-red);">上传成绩 Excel</h2>
-        </div>
-
-        <form action="{{ url_for('admin_upload_page') }}" method="POST" enctype="multipart/form-data" class="p-5 space-y-5">
-
-            <!-- 文件拖拽区域 -->
-            <div>
-                <label class="field-label">选择文件</label>
-                <div class="drop-zone" id="drop-zone">
-                    <input type="file" name="excel_file" id="excel_file" required accept=".xlsx,.xls"
-                           onchange="onFileChange(this)">
-                    <div id="drop-default">
-                        <svg class="w-10 h-10 mx-auto mb-3" style="color:#fca5a5;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                        </svg>
-                        <p class="text-sm font-kaiti" style="color: var(--paper-red);">点击或拖拽 Excel 文件至此处</p>
-                        <p class="text-xs text-gray-400 mt-1 font-kaiti">支持 .xlsx / .xls 格式</p>
-                    </div>
-                    <div id="drop-selected" class="hidden">
-                        <svg class="w-8 h-8 mx-auto mb-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        <p class="text-sm text-green-700 font-kaiti font-bold mb-1">文件已选择</p>
-                        <span class="file-chip" id="file-name-chip">—</span>
-                    </div>
+            <div class="stat-card stat-signed">
+                <div class="stat-icon">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div>
+                    <div class="stat-num" id="stat-signed">—</div>
+                    <div class="stat-label">已签收</div>
                 </div>
             </div>
-
-            <!-- Excel 模板说明 -->
-            <div>
-                <div class="section-divider"><span>Excel 表头要求</span></div>
-                <div class="spec-box">
-                    <table>
-                        <tr>
-                            <td>姓名 <span style="color:var(--paper-red)">*</span></td>
-                            <td>必填，用于家长查询</td>
-                        </tr>
-                        <tr>
-                            <td>职位</td>
-                            <td>可选，如：班长、学习委员</td>
-                        </tr>
-                        <tr>
-                            <td>语文 / 数学 / 英语</td>
-                            <td>期末各科成绩</td>
-                        </tr>
-                        <tr>
-                            <td>科学 / 道德与法治</td>
-                            <td>期末各科成绩</td>
-                        </tr>
-                        <tr>
-                            <td>期末评语</td>
-                            <td>可由 AI 自动生成或手动填写</td>
-                        </tr>
-                    </table>
+            <div class="stat-card stat-unsigned">
+                <div class="stat-icon">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div>
+                    <div class="stat-num" id="stat-unsigned">—</div>
+                    <div class="stat-label">未签收</div>
                 </div>
             </div>
+        </div>
 
-            <!-- AI 审核开关 -->
-            <div>
-                <div class="section-divider"><span>发布选项</span></div>
-                <label class="ai-toggle-row" for="use_ai_review">
-                    <div class="custom-check" id="check-visual">
-                        <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                        </svg>
-                    </div>
-                    <input type="checkbox" name="use_ai_review" id="use_ai_review" value="1" class="sr-only">
+        <!-- ================================================================
+             SECTION 1 - 通知书时间设置
+             ================================================================ -->
+        <div class="admin-card accent-gray section-card fade-in" data-section="time">
+            <div class="card-header gray">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <h2 class="text-sm font-bold text-gray-700 font-kaiti tracking-wide">通知书时间设置</h2>
+            </div>
+            <form action="{{ url_for('admin_update_settings') }}" method="POST" class="p-5 space-y-5">
+                <div>
+                    <label class="field-label gray">本学期放假时间</label>
+                    <input type="text" name="holiday_start" value="{{ settings.get('holiday_start', '') }}"
+                           placeholder="例如：2026年1月31日" class="input-underline">
+                </div>
+                <div class="grid grid-cols-2 gap-5">
                     <div>
-                        <p class="text-sm font-bold font-kaiti" style="color: var(--paper-red);">启用 AI 评语审核</p>
-                        <p class="text-xs text-gray-500 mt-0.5 font-kaiti leading-relaxed">上传后进入审核页面，可让 AI 自动生成或逐条修改评语后再发布</p>
+                        <label class="field-label gray">下学期报到时间</label>
+                        <input type="text" name="next_term_report" value="{{ settings.get('next_term_report', '') }}"
+                               placeholder="例如：3月4日" class="input-underline">
                     </div>
-                </label>
-            </div>
+                    <div>
+                        <label class="field-label gray">下学期正式上课</label>
+                        <input type="text" name="next_term_start" value="{{ settings.get('next_term_start', '') }}"
+                               placeholder="例如：3月5日" class="input-underline">
+                    </div>
+                </div>
+                <button type="submit" class="btn-secondary">保存设置</button>
+            </form>
+        </div>
 
-            <!-- 提交按钮 -->
-            <button type="submit" id="submit-btn" class="btn-submit">
+        <!-- ================================================================
+             SECTION 2 - 分数等级映射设置
+             ================================================================ -->
+        <div class="admin-card accent-gray section-card fade-in" data-section="grade">
+            <div class="card-header gray">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m-7 4h8m-9 4h5m-6 5h12a2 2 0 002-2V6.5L15.5 2H6a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                <h2 class="text-sm font-bold text-gray-700 font-kaiti tracking-wide">家长端分数等级规则</h2>
+            </div>
+            <form action="{{ url_for('admin_update_grade_settings') }}" method="POST" class="p-5 space-y-4">
+                <div>
+                    <label class="field-label gray">分数映射等级</label>
+                    <textarea name="grade_rules" rows="5"
+                              class="input-underline"
+                              style="resize: vertical; line-height: 1.65;"
+                              placeholder="90=A&#10;80=B&#10;60=C&#10;0=D">{{ settings.get('grade_rules', '90=A\n80=B\n60=C\n0=D') }}</textarea>
+                </div>
+                <p class="text-xs text-gray-400 font-kaiti leading-relaxed">
+                    每行一条规则，格式为"最低分=等级"。系统会从高到低匹配。
+                </p>
+
+                <!-- 成绩显示模式 -->
+                <div>
+                    <div class="section-divider"><span>家长端显示模式</span></div>
+                    <div class="flex gap-2" id="display-mode-group">
+                        <label class="flex-1 cursor-pointer">
+                            <input type="radio" name="score_display_mode" value="grade_only" class="sr-only display-mode-radio"
+                                   {{ 'checked' if settings.get('score_display_mode', 'grade_only') == 'grade_only' else '' }}>
+                            <div class="display-mode-option p-3 rounded-xl border-2 text-center transition-all"
+                                 style="border-color:#e5e7eb; background:#fff;">
+                                <p class="text-sm font-bold font-kaiti" style="color:#374151;">仅显示等级</p>
+                                <p class="text-xs text-gray-400 mt-0.5 font-kaiti">如：A / B / C / D</p>
+                            </div>
+                        </label>
+                        <label class="flex-1 cursor-pointer">
+                            <input type="radio" name="score_display_mode" value="score_only" class="sr-only display-mode-radio"
+                                   {{ 'checked' if settings.get('score_display_mode') == 'score_only' else '' }}>
+                            <div class="display-mode-option p-3 rounded-xl border-2 text-center transition-all"
+                                 style="border-color:#e5e7eb; background:#fff;">
+                                <p class="text-sm font-bold font-kaiti" style="color:#374151;">仅显示成绩</p>
+                                <p class="text-xs text-gray-400 mt-0.5 font-kaiti">如：85 / 92 / 78</p>
+                            </div>
+                        </label>
+                        <label class="flex-1 cursor-pointer">
+                            <input type="radio" name="score_display_mode" value="both" class="sr-only display-mode-radio"
+                                   {{ 'checked' if settings.get('score_display_mode') == 'both' else '' }}>
+                            <div class="display-mode-option p-3 rounded-xl border-2 text-center transition-all"
+                                 style="border-color:#e5e7eb; background:#fff;">
+                                <p class="text-sm font-bold font-kaiti" style="color:#374151;">同时显示</p>
+                                <p class="text-xs text-gray-400 mt-0.5 font-kaiti">成绩 + 等级</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-secondary">保存等级规则</button>
+            </form>
+        </div>
+
+        <!-- ================================================================
+             SECTION 3 - AI 接口设置
+             ================================================================ -->
+        <div class="admin-card accent-gray section-card fade-in" data-section="ai">
+            <div class="card-header gray">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                <h2 class="text-sm font-bold text-gray-700 font-kaiti tracking-wide">AI 评语接口设置</h2>
+            </div>
+            <form action="{{ url_for('admin_update_ai_settings') }}" method="POST" class="p-5 space-y-5">
+                <div>
+                    <label class="field-label gray">API 密钥</label>
+                    <input type="password" name="ai_api_key" value="{{ settings.get('ai_api_key', '') }}"
+                           placeholder="sk-…" class="input-underline">
+                </div>
+                <div>
+                    <label class="field-label gray">接口地址</label>
+                    <input type="text" name="ai_base_url" value="{{ settings.get('ai_base_url', 'https://api.deepseek.com') }}"
+                           placeholder="https://api.deepseek.com" class="input-underline">
+                </div>
+                <div>
+                    <label class="field-label gray">模型名称</label>
+                    <input type="text" name="ai_model" value="{{ settings.get('ai_model', 'deepseek-v4-flash') }}"
+                           placeholder="deepseek-v4-flash" class="input-underline">
+                </div>
+                <p class="text-xs text-gray-400 font-kaiti">默认使用 DeepSeek API。支持所有 OpenAI 兼容接口，如通义千问、智谱 AI、OpenAI 等。</p>
+                <button type="submit" class="btn-secondary">保存 AI 设置</button>
+            </form>
+        </div>
+
+        <!-- ================================================================
+             SECTION 4 - 上传成绩
+             ================================================================ -->
+        <div class="admin-card accent-red section-card active fade-in" data-section="upload">
+            <div class="card-header">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                 </svg>
-                <span id="submit-label">上传文件并直接发布</span>
-            </button>
-
-            <!-- 底部链接 -->
-            <div class="flex items-center justify-between pt-1">
-                <a href="{{ url_for('admin_review_page') }}" class="text-sm font-kaiti font-bold flex items-center gap-1 hover:underline" style="color: var(--paper-red);">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                    查看待审核草稿
-                </a>
-                <a href="{{ url_for('admin_logout') }}" class="text-sm text-gray-400 hover:text-gray-600 font-kaiti underline">退出登录</a>
+                <h2 class="text-sm font-bold font-kaiti tracking-wide" style="color: var(--paper-red);">上传成绩 Excel</h2>
             </div>
-        </form>
+            <form action="{{ url_for('admin_upload_page') }}" method="POST" enctype="multipart/form-data" class="p-5 space-y-5">
+                <div>
+                    <label class="field-label">选择文件</label>
+                    <div class="drop-zone" id="drop-zone">
+                        <input type="file" name="excel_file" id="excel_file" required accept=".xlsx,.xls"
+                               onchange="onFileChange(this)">
+                        <div id="drop-default">
+                            <svg class="w-10 h-10 mx-auto mb-3" style="color:#fca5a5;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            <p class="text-sm font-kaiti" style="color: var(--paper-red);">点击或拖拽 Excel 文件至此处</p>
+                            <p class="text-xs text-gray-400 mt-1 font-kaiti">支持 .xlsx / .xls 格式</p>
+                        </div>
+                        <div id="drop-selected" class="hidden">
+                            <svg class="w-8 h-8 mx-auto mb-2 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <p class="text-sm text-green-700 font-kaiti font-bold mb-1">文件已选择</p>
+                            <span class="file-chip" id="file-name-chip">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-divider"><span>Excel 表头要求</span></div>
+                    <div class="spec-box">
+                        <table>
+                            <tr><td>姓名 <span style="color:var(--paper-red)">*</span></td><td>必填，用于家长查询</td></tr>
+                            <tr><td>职位</td><td>可选，如：班长、学习委员</td></tr>
+                            <tr><td>语文 / 数学 / 英语</td><td>期末各科成绩</td></tr>
+                            <tr><td>科学 / 道德与法治</td><td>期末各科成绩</td></tr>
+                            <tr><td>期末评语</td><td>可由 AI 自动生成或手动填写</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="section-divider"><span>发布选项</span></div>
+                    <label class="ai-toggle-row" for="use_ai_review">
+                        <div class="custom-check" id="check-visual">
+                            <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <input type="checkbox" name="use_ai_review" id="use_ai_review" value="1" class="sr-only">
+                        <div>
+                            <p class="text-sm font-bold font-kaiti" style="color: var(--paper-red);">启用 AI 评语审核</p>
+                            <p class="text-xs text-gray-500 mt-0.5 font-kaiti leading-relaxed">上传后进入审核页面，可让 AI 自动生成或逐条修改评语后再发布</p>
+                        </div>
+                    </label>
+                </div>
+
+                <button type="submit" id="submit-btn" class="btn-submit">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                    <span id="submit-label">上传文件并直接发布</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- ================================================================
+             SECTION 5 - 安全告知书编辑
+             ================================================================ -->
+        <div class="admin-card accent-gray section-card fade-in" data-section="safety">
+            <div class="card-header gray">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <h2 class="text-sm font-bold text-gray-700 font-kaiti tracking-wide">假期安全告知书编辑</h2>
+            </div>
+            <div class="p-5 space-y-4">
+                <div>
+                    <label class="field-label gray">预设模板</label>
+                    <select class="template-select" id="safety-template-select" onchange="loadSafetyTemplate(this.value)">
+                        <option value="">加载预设模板…</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="field-label gray">告知书内容（HTML）</label>
+                    <textarea id="safety-editor" class="safety-editor-textarea"
+                        placeholder="在此编辑安全告知书 HTML 内容，或使用预设模板/AI 优化…"></textarea>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="safety-preview-toggle" onchange="toggleSafetyPreview()" class="sr-only">
+                        <div class="custom-check" id="safety-preview-check">
+                            <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <span class="text-sm text-gray-600 font-kaiti">显示预览</span>
+                    </label>
+                </div>
+
+                <div id="safety-preview" class="safety-preview-box hidden"></div>
+
+                <button onclick="aiOptimizeSafety()" id="btn-ai-safety" class="btn-ai-optimize">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    AI 智能优化文案
+                </button>
+
+                <button onclick="saveSafetyNotice()" class="btn-submit">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                    </svg>
+                    保存告知书
+                </button>
+
+                <p class="text-xs text-gray-400 text-center font-kaiti">告知书保存后，家长端查询通知书时将自动显示最新版本。</p>
+            </div>
+        </div>
+
+        <!-- ================================================================
+             SECTION 6 - 家长签收看板
+             ================================================================ -->
+        <div class="admin-card accent-red section-card fade-in" data-section="signature">
+            <div class="card-header">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <h2 class="text-sm font-bold font-kaiti tracking-wide" style="color: var(--paper-red);">家长签收看板</h2>
+            </div>
+            <div class="p-5">
+                <!-- 筛选按钮 -->
+                <div class="flex gap-2 mb-4" id="sig-filters">
+                    <button class="sig-filter-pill active" data-sigfilter="all" onclick="sigFilter('all')">全部</button>
+                    <button class="sig-filter-pill" data-sigfilter="signed" onclick="sigFilter('signed')">已签收</button>
+                    <button class="sig-filter-pill" data-sigfilter="unsigned" onclick="sigFilter('unsigned')">未签收</button>
+                </div>
+
+                <!-- 学生列表 -->
+                <div id="sig-list" class="rounded-xl overflow-hidden border border-gray-100">
+                    <div class="sig-empty">加载中…</div>
+                </div>
+
+                <!-- 底部刷新 -->
+                <button onclick="loadSignatureData()" class="btn-secondary mt-4 flex items-center justify-center gap-1.5">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    刷新数据
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ============================================================
+         SIGNATURE MODAL
+         ============================================================ -->
+    <div id="sig-modal-overlay" class="sig-modal-overlay hidden" onclick="if(event.target===this)sigModalClose()">
+        <div class="sig-modal">
+            <div class="sig-modal-header">
+                <h3 class="text-sm font-bold font-kaiti" style="color: var(--paper-red);" id="sig-modal-name">—</h3>
+                <button onclick="sigModalClose()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+            </div>
+            <div class="sig-modal-body">
+                <p class="text-xs text-gray-500 mt-3 font-kaiti" id="sig-modal-time">签署时间：—</p>
+                <div id="sig-modal-img-wrap" class="mt-3">
+                    <p class="text-gray-400 font-kaiti text-sm">未签收</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- 底部留白 -->
-    <div class="h-8"></div>
-
 <script>
-    // ── 功能切换 ──
-    function switchSection(name) {
-        document.querySelectorAll('.section-tab').forEach(el => {
-            el.classList.toggle('active', el.dataset.section === name);
-        });
-        document.querySelectorAll('.section-card').forEach(el => {
-            el.classList.toggle('active', el.dataset.section === name);
+(function() {
+    // ================================================================
+    //  FLASH AUTO-DISMISS (2s fade-out)
+    // ================================================================
+    const flashContainer = document.getElementById('flash-container');
+    if (flashContainer) {
+        const msgs = flashContainer.querySelectorAll('.flash-msg');
+        msgs.forEach(msg => {
+            setTimeout(() => {
+                msg.classList.add('dismissing');
+                msg.addEventListener('animationend', () => msg.remove());
+            }, 2000);
         });
     }
 
-    // ── 文件选择 ──
-    function onFileChange(input) {
+    // ================================================================
+    //  DISPLAY MODE RADIO CARDS
+    // ================================================================
+    function updateDisplayModeVisuals() {
+        document.querySelectorAll('.display-mode-radio').forEach(radio => {
+            const option = radio.closest('label').querySelector('.display-mode-option');
+            if (option) {
+                option.classList.toggle('active', radio.checked);
+            }
+        });
+    }
+    document.querySelectorAll('.display-mode-radio').forEach(radio => {
+        radio.addEventListener('change', updateDisplayModeVisuals);
+    });
+    updateDisplayModeVisuals();
+
+    // ================================================================
+    //  SECTION SWITCHING
+    // ================================================================
+    const isMobile = () => window.innerWidth <= 768;
+
+    function switchSection(name) {
+        // Update sidebar nav
+        document.querySelectorAll('.sidebar-nav-item').forEach(el => {
+            el.classList.toggle('active', el.dataset.section === name);
+        });
+        // Update bottom nav
+        document.querySelectorAll('.bottom-nav-item').forEach(el => {
+            el.classList.toggle('active', el.dataset.section === name);
+        });
+        // Show/hide section cards
+        document.querySelectorAll('.section-card').forEach(el => {
+            el.classList.toggle('active', el.dataset.section === name);
+        });
+
+        // Lazy-load data
+        if (name === 'signature' && !sigAllData.length) {
+            loadSignatureData();
+        }
+        if (name === 'safety' && !safetyLoaded) {
+            loadSafetyNotice();
+        }
+    }
+
+    // Expose to global scope for onclick handlers
+    window.switchSection = switchSection;
+
+    // ================================================================
+    //  FILE UPLOAD
+    // ================================================================
+    window.onFileChange = function(input) {
         const file = input.files[0];
         const defaultView = document.getElementById('drop-default');
         const selectedView = document.getElementById('drop-selected');
@@ -433,26 +1039,30 @@
             defaultView.classList.remove('hidden');
             selectedView.classList.add('hidden');
         }
+    };
+
+    // Drag-and-drop
+    const dropZone = document.getElementById('drop-zone');
+    if (dropZone) {
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                const input = document.getElementById('excel_file');
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                input.files = dt.files;
+                window.onFileChange(input);
+            }
+        });
     }
 
-    // ── 拖拽 ──
-    const dropZone = document.getElementById('drop-zone');
-    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
-    dropZone.addEventListener('drop', e => {
-        e.preventDefault();
-        dropZone.classList.remove('dragover');
-        const file = e.dataTransfer.files[0];
-        if (file) {
-            const input = document.getElementById('excel_file');
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            input.files = dt.files;
-            onFileChange(input);
-        }
-    });
-
-    // ── AI 审核开关 ──
+    // ================================================================
+    //  AI REVIEW TOGGLE
+    // ================================================================
     const checkbox = document.getElementById('use_ai_review');
     const checkVisual = document.getElementById('check-visual');
     const submitLabel = document.getElementById('submit-label');
@@ -472,13 +1082,288 @@
         }
     }
 
-    // Label click toggles checkbox
-    document.querySelector('label[for="use_ai_review"]').addEventListener('click', e => {
-        // Let default label behavior toggle checkbox, then sync
-        setTimeout(syncToggle, 0);
+    if (checkbox) {
+        const toggleLabel = document.querySelector('label[for="use_ai_review"]');
+        if (toggleLabel) {
+            toggleLabel.addEventListener('click', () => setTimeout(syncToggle, 0));
+        }
+        checkbox.addEventListener('change', syncToggle);
+    }
+
+    // ================================================================
+    //  SIGNATURE DASHBOARD
+    // ================================================================
+    let sigAllData = [];
+    let sigFilterMode = 'all';
+
+    async function loadSignatureData() {
+        const list = document.getElementById('sig-list');
+        list.innerHTML = '<div class="sig-empty">加载中…</div>';
+        try {
+            const res = await fetch('/api/signature_dashboard');
+            if (!res.ok) throw new Error('请求失败');
+            const data = await res.json();
+            sigAllData = data.students;
+            updateStats(data.total, data.signed_count, data.unsigned_count);
+            sigRender();
+        } catch (e) {
+            list.innerHTML = '<div class="sig-empty" style="color: var(--paper-red);">加载失败，请重试</div>';
+        }
+    }
+
+    function updateStats(total, signed, unsigned) {
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-signed').textContent = signed;
+        document.getElementById('stat-unsigned').textContent = unsigned;
+    }
+
+    window.sigFilter = function(mode) {
+        sigFilterMode = mode;
+        document.querySelectorAll('.sig-filter-pill').forEach(el => {
+            el.classList.toggle('active', el.dataset.sigfilter === mode);
+        });
+        sigRender();
+    };
+
+    function sigRender() {
+        const list = document.getElementById('sig-list');
+        let filtered = sigAllData;
+        if (sigFilterMode === 'signed') filtered = sigAllData.filter(s => s.signed);
+        else if (sigFilterMode === 'unsigned') filtered = sigAllData.filter(s => !s.signed);
+
+        if (!sigAllData.length) {
+            list.innerHTML = '<div class="sig-empty">暂无已发布的学生记录</div>';
+            return;
+        }
+        if (!filtered.length) {
+            const msg = sigFilterMode === 'signed' ? '所有家长尚未签收' : sigFilterMode === 'unsigned' ? '所有家长均已签收' : '暂无记录';
+            list.innerHTML = `<div class="sig-empty">${msg}</div>`;
+            return;
+        }
+
+        let html = '';
+        filtered.forEach(s => {
+            const initial = (s.student_name || '?').charAt(0);
+            const avatarCls = s.signed ? 'signed-avatar' : 'unsigned-avatar';
+            const statusCls = s.signed ? 'status-signed' : 'status-unsigned';
+            const statusText = s.signed ? '已签收' : '未签收';
+            const metaText = [s.position, s.signed ? `签收时间: ${s.signed_at || '—'}` : ''].filter(Boolean).join(' · ');
+            html += `
+            <div class="sig-row" onclick="${s.signed ? `window.sigModalOpen(${s.id})` : ''}" style="${s.signed ? '' : 'cursor:default;'}">
+                <div class="avatar ${avatarCls}">${escHtml(initial)}</div>
+                <div class="info">
+                    <div class="name">${escHtml(s.student_name)}</div>
+                    ${metaText ? `<div class="meta">${escHtml(metaText)}</div>` : ''}
+                </div>
+                <span class="status-badge ${statusCls}">${statusText}</span>
+                ${s.signed ? '<svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>' : ''}
+            </div>`;
+        });
+        list.innerHTML = html;
+    }
+
+    window.sigModalOpen = async function(studentId) {
+        const overlay = document.getElementById('sig-modal-overlay');
+        overlay.classList.remove('hidden');
+        document.getElementById('sig-modal-img-wrap').innerHTML = '<p class="text-gray-400 font-kaiti text-sm">加载中…</p>';
+        document.getElementById('sig-modal-name').textContent = '—';
+        document.getElementById('sig-modal-time').textContent = '签署时间：—';
+        try {
+            const res = await fetch(`/api/signature_detail/${studentId}`);
+            if (!res.ok) throw new Error('请求失败');
+            const d = await res.json();
+            document.getElementById('sig-modal-name').textContent = d.student_name + ' 的签名';
+            document.getElementById('sig-modal-time').textContent = '签署时间：' + (d.signed_at || '—');
+            if (d.signature_img) {
+                document.getElementById('sig-modal-img-wrap').innerHTML =
+                    `<img src="${d.signature_img}" alt="签名" class="mx-auto">`;
+            } else {
+                document.getElementById('sig-modal-img-wrap').innerHTML =
+                    '<p class="text-gray-400 font-kaiti text-sm">未签收</p>';
+            }
+        } catch (e) {
+            document.getElementById('sig-modal-img-wrap').innerHTML =
+                '<p class="text-red-500 font-kaiti text-sm">加载失败</p>';
+        }
+    };
+
+    window.sigModalClose = function() {
+        document.getElementById('sig-modal-overlay').classList.add('hidden');
+    };
+
+    window.loadSignatureData = loadSignatureData;
+
+    function escHtml(s) {
+        const d = document.createElement('div');
+        d.textContent = s || '';
+        return d.innerHTML;
+    }
+
+    // Load stats on page init
+    (function initStats() {
+        fetch('/api/signature_dashboard')
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (data) updateStats(data.total, data.signed_count, data.unsigned_count);
+            })
+            .catch(() => {});
+    })();
+
+    // ================================================================
+    //  SAFETY NOTICE EDITOR
+    // ================================================================
+    let safetyLoaded = false;
+    let safetyTemplates = {};
+
+    async function loadSafetyNotice() {
+        safetyLoaded = true;
+        try {
+            const res = await fetch('/api/safety_notice');
+            if (!res.ok) throw new Error('加载失败');
+            const data = await res.json();
+            document.getElementById('safety-editor').value = data.html || '';
+
+            safetyTemplates = data.templates || {};
+            const sel = document.getElementById('safety-template-select');
+            sel.innerHTML = '<option value="">加载预设模板…</option>';
+            for (const [key, info] of Object.entries(safetyTemplates)) {
+                sel.innerHTML += `<option value="${key}">${info.icon} ${info.name}</option>`;
+            }
+        } catch (e) {
+            document.getElementById('safety-editor').value = '加载失败，请刷新重试';
+        }
+    }
+
+    window.loadSafetyTemplate = async function(key) {
+        if (!key) return;
+        try {
+            const res = await fetch(`/api/safety_notice_template/${key}`);
+            if (!res.ok) throw new Error('加载失败');
+            const data = await res.json();
+            document.getElementById('safety-editor').value = data.html || '';
+            if (!document.getElementById('safety-preview').classList.contains('hidden')) {
+                document.getElementById('safety-preview').innerHTML = data.html || '';
+            }
+            document.getElementById('safety-template-select').value = '';
+        } catch (e) {
+            alert('加载模板失败');
+        }
+    };
+
+    window.saveSafetyNotice = async function() {
+        const html = document.getElementById('safety-editor').value.trim();
+        if (!html) { alert('内容不能为空'); return; }
+        const btn = event.target.closest('button');
+        const origText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '保存中…';
+        try {
+            const res = await fetch('/admin/safety_notice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ html: html, template: 'custom' })
+            });
+            if (res.ok) {
+                btn.innerHTML = '已保存 ✓';
+                setTimeout(() => { btn.innerHTML = origText; btn.disabled = false; }, 1500);
+            } else {
+                const d = await res.json();
+                alert(d.error || '保存失败');
+                btn.innerHTML = origText;
+                btn.disabled = false;
+            }
+        } catch (e) {
+            alert('网络错误');
+            btn.innerHTML = origText;
+            btn.disabled = false;
+        }
+    };
+
+    window.aiOptimizeSafety = async function() {
+        const btn = document.getElementById('btn-ai-safety');
+        const origHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> AI 优化中…';
+
+        const currentText = document.getElementById('safety-editor').value;
+        let season = '寒假';
+        try {
+            const res = await fetch('/api/safety_notice');
+            const data = await res.json();
+            const html = data.html || '';
+            if (html.includes('暑假')) season = '暑假';
+            else if (html.includes('寒假')) season = '寒假';
+        } catch(e) {}
+
+        try {
+            const res = await fetch('/api/optimize_safety_notice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ season: season, current_text: currentText })
+            });
+            const data = await res.json();
+            if (res.ok && data.text) {
+                document.getElementById('safety-editor').value = data.text;
+                alert('AI 已生成优化文案，请检查并调整后保存。\n\n提示：如需生成带格式的 HTML，请使用预设模板功能。');
+            } else {
+                alert(data.error || '优化失败，请确认已配置 AI 接口');
+            }
+        } catch (e) {
+            alert('网络错误');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = origHTML;
+        }
+    };
+
+    window.toggleSafetyPreview = function() {
+        const preview = document.getElementById('safety-preview');
+        const check = document.getElementById('safety-preview-check');
+        if (preview.classList.contains('hidden')) {
+            preview.classList.remove('hidden');
+            check.classList.add('checked');
+            preview.innerHTML = document.getElementById('safety-editor').value || '<p class="text-gray-400 font-kaiti">暂无内容</p>';
+        } else {
+            preview.classList.add('hidden');
+            check.classList.remove('checked');
+        }
+    };
+
+    // ================================================================
+    //  MOBILE SETTINGS SUBMENU
+    // ================================================================
+    window.openMobileSettings = function() {
+        document.getElementById('submenu-overlay').classList.add('show');
+        document.getElementById('submenu-sheet').classList.add('show');
+    };
+
+    window.closeMobileSettings = function() {
+        document.getElementById('submenu-overlay').classList.remove('show');
+        document.getElementById('submenu-sheet').classList.remove('show');
+    };
+
+    // ================================================================
+    //  MOBILE HEADER TOGGLE
+    // ================================================================
+    function updateMobileHeader() {
+        const header = document.querySelector('.mobile-header');
+        if (header) {
+            header.style.display = isMobile() ? 'block' : 'none';
+        }
+    }
+    window.addEventListener('resize', updateMobileHeader);
+    updateMobileHeader();
+
+    // ================================================================
+    //  RESPONSIVE: close mobile submenu on resize to desktop
+    // ================================================================
+    window.addEventListener('resize', () => {
+        if (!isMobile()) {
+            closeMobileSettings();
+        }
     });
 
-    checkbox.addEventListener('change', syncToggle);
+})();
 </script>
 </body>
 </html>

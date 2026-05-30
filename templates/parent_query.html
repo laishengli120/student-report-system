@@ -6,7 +6,7 @@
     <title>学生素质教育报告册</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=2">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <style>
@@ -106,7 +106,7 @@
                             <thead>
                                 <tr>
                                     <th class="w-24">学科</th>
-                                    <th class="w-20">等级</th>
+                                    <th class="w-20" id="score-header-label">等级</th>
                                     <th>班主任评语</th>
                                 </tr>
                             </thead>
@@ -114,12 +114,10 @@
                                 <tr>
                                     <td class="bg-red-50 font-kaiti">语文</td>
                                     <td class="font-bold text-xl font-mono" id="score-chinese"></td>
-                                    <td rowspan="5" class="text-left align-top p-4">
-                                        <div class="relative h-full min-h-[200px]">
-                                            <p id="result-remarks" class="font-kaiti text-lg leading-relaxed text-gray-800 italic">
-                                                <!-- Remarks go here -->
-                                            </p>
-                                        </div>
+                                    <td rowspan="5" class="text-left align-middle p-4">
+                                        <p id="result-remarks" class="font-kaiti text-lg leading-relaxed text-gray-800 italic" style="text-indent:2em;">
+                                            <!-- Remarks go here -->
+                                        </p>
                                     </td>
                                 </tr>
                                 <tr>
@@ -143,61 +141,9 @@
                     </div>
                 </div>
 
-                <!-- Section 2: Updated Safety Notice (Replacing old content) -->
-                <div class="mb-6 border-2 border-paper-red rounded p-4 bg-red-50/20">
-                    <div class="text-center mb-4">
-                        <span class="bg-paper-red text-white px-6 py-1 rounded-full font-bold text-lg font-kaiti tracking-widest">假期安全告知书</span>
-                    </div>
-                    
-                    <p class="font-kaiti text-gray-800 mb-4 indent-8 leading-relaxed text-justify">
-                        为了让孩子们度过一个平安、健康、愉快的假期，请各位家长切实承担起监护责任，与学校携手共同守护孩子的假期安全。在此，我们特别提醒您和孩子注意以下几个方面：
-                    </p>
-
-                    <div class="space-y-4 font-kaiti text-sm sm:text-base text-gray-700 leading-relaxed">
-                        <!-- Item 1 -->
-                        <div>
-                            <span class="font-bold text-paper-red text-lg">❄️ 冬季防溺水：</span>
-                            <span class="text-gray-800">冬季水面结冰，易发生溺水事故。请教育孩子不私自到河边、湖边滑冰、玩耍，并做到“四知道”——知道孩子去哪里、和谁去、做什么、何时回。</span>
-                        </div>
-
-                        <!-- Item 2 -->
-                        <div>
-                            <span class="font-bold text-paper-red text-lg">🔥 居家与消防安全：</span>
-                            <ol class="list-decimal list-inside ml-2 mt-1 space-y-1 text-gray-700 bg-white p-3 rounded border border-red-100">
-                                <li>注意用火用电用气安全，定期检查家中电器、燃气管道，做到人走火熄、电断、气关，取暖设备远离易燃物，切勿超负荷用电。</li>
-                                <li>严禁在楼梯间、疏散通道等公共区域停放电动车或充电，切勿将电池带回家中充电。</li>
-                                <li>自觉遵守禁放规定，不购买、不燃放烟花爆竹，不携带烟花爆竹进入公共场所，并主动劝阻家人和亲友的燃放行为。</li>
-                            </ol>
-                        </div>
-
-                        <!-- Items 3-8 (Grouped for layout) -->
-                        <div class="grid grid-cols-1 gap-3">
-                            <div>
-                                <span class="font-bold text-paper-red">🚦 交通安全：</span>
-                                遵守交通规则，过马路走斑马线，不闯红灯，不翻越护栏。未满12周岁不骑自行车上路，未满16周岁不骑电动车。乘坐正规交通工具，佩戴安全头盔，注意铁路安全。
-                            </div>
-                            <div>
-                                <span class="font-bold text-paper-red">🥗 食品安全：</span>
-                                注意饮食卫生，食材要新鲜、煮熟，不食用“三无”食品。外出就餐选择证照齐全的餐馆，避免暴饮暴食。
-                            </div>
-                            <div>
-                                <span class="font-bold text-paper-red">🌐 网络安全：</span>
-                                控制孩子使用电子产品的时间，防范网络沉迷和电信诈骗。教育孩子不轻信陌生信息、不泄露个人信息、不随意转账，文明上网，谨防网络交友风险。
-                            </div>
-                            <div>
-                                <span class="font-bold text-paper-red">🌪️ 极端天气安全：</span>
-                                关注天气预报，遇雨雪、冰冻、大风等天气尽量减少外出。外出时注意防滑防摔，远离积雪广告牌、树木等危险区域。
-                            </div>
-                            <div>
-                                <span class="font-bold text-paper-red">⚖️ 法治与行为安全：</span>
-                                教育孩子遵纪守法，不进入不宜场所，不接触不良人员。关注孩子心理与行为变化，及时沟通引导，防范欺凌行为。
-                            </div>
-                            <div>
-                                <span class="font-bold text-paper-red">🏠 家庭环境与榜样作用：</span>
-                                家长应以身作则，营造积极健康的家庭氛围，不让孩子接触不良信息与场所，不纵容不良行为。
-                            </div>
-                        </div>
-                    </div>
+                <!-- Section 2: Safety Notice (loaded dynamically from admin settings) -->
+                <div id="safety-notice-content" class="mb-6">
+                    <!-- Filled from API response -->
                 </div>
 
                 <!-- Signature Section -->
@@ -389,14 +335,40 @@
                 if (response.ok) {
                     // Fill data
                     document.getElementById('announcement-content').innerHTML = data.announcement_html;
-                    document.getElementById('score-chinese').textContent = data.chinese_grade || '';
-                    document.getElementById('score-math').textContent = data.math_grade || '';
-                    document.getElementById('score-english').textContent = data.english_grade || '';
-                    document.getElementById('score-science').textContent = data.science_grade || '';
-                    document.getElementById('score-morality').textContent = data.morality_grade || '';
+
+                    // Score display: adapt to score_display_mode
+                    const displayMode = data.score_display_mode || 'grade_only';
+                    const headerLabel = document.getElementById('score-header-label');
+                    const subjects = ['chinese', 'math', 'english', 'science', 'morality'];
+                    subjects.forEach(subj => {
+                        const grade = data[subj + '_grade'] || '';
+                        const score = data[subj + '_score'];
+                        const scoreStr = (score !== null && score !== undefined && score !== '') ? score : '';
+                        let displayText = '';
+                        if (displayMode === 'grade_only') {
+                            displayText = grade;
+                        } else if (displayMode === 'score_only') {
+                            displayText = scoreStr;
+                        } else if (displayMode === 'both') {
+                            displayText = (scoreStr && grade) ? `${scoreStr} (${grade})` : (grade || scoreStr);
+                        }
+                        document.getElementById('score-' + subj).textContent = displayText;
+                    });
+                    // Update header label
+                    if (headerLabel) {
+                        if (displayMode === 'grade_only') headerLabel.textContent = '等级';
+                        else if (displayMode === 'score_only') headerLabel.textContent = '成绩';
+                        else headerLabel.textContent = '成绩 / 等级';
+                    }
                     
                     const remarks = data.final_remarks || "（暂无评语）";
                     document.getElementById('result-remarks').innerHTML = remarks.replace(/\n/g, '<br>');
+
+                    // Fill safety notice content
+                    const safetyDiv = document.getElementById('safety-notice-content');
+                    if (safetyDiv && data.safety_notice_html) {
+                        safetyDiv.innerHTML = data.safety_notice_html;
+                    }
 
                     // Handle Signature UI
                     if (data.signed_at && data.signature_img) {

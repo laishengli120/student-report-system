@@ -9,3 +9,16 @@
 .text-paper-red { color: var(--paper-red); }
 .border-paper-red { border-color: var(--paper-red); }
 .hover\:bg-paper-red-dark:hover { background-color: var(--paper-red-dark); }
+
+/* ── 班主任评语左对齐（同时覆盖 table td 默认居中）── */
+.remarks-cell,
+.report-table td.remarks-cell {
+    text-align: left !important;
+}
+.remarks-cell p,
+#result-remarks {
+    text-align: left !important;
+    text-indent: 2em;
+    width: 100%;
+    display: block;
+}

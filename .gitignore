@@ -4,6 +4,7 @@ instance/
 
 # Uploaded files
 uploads/*
+outputs/
 
 # Test fixtures
 test_students.xlsx
@@ -40,3 +41,9 @@ Thumbs.db
 dist/
 build/
 *.egg-info/
+
+# 参赛材料（与项目无关）
+参赛材料/
+参赛材料_优化前备份-20260507/
+附件3：创AI案例征集指南.docx
+关于开展2026年湖南省教师人工智能应用案例征集活动的通知.pdf

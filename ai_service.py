@@ -151,3 +151,251 @@ def generate_single_comment(student_name, position, types, ai_config):
             return None, f'AI 调用异常: {str(e)}'
 
     return None, last_error
+
+
+# ── 安全告知书模板 ──
+
+SAFETY_NOTICE_TEMPLATES = {
+    'winter': {
+        'name': '冬季寒假版',
+        'icon': '❄️',
+        'title': '假期安全告知书',
+        'intro': '为了让孩子们度过一个平安、健康、愉快的假期，请各位家长切实承担起监护责任，与学校携手共同守护孩子的假期安全。在此，我们特别提醒您和孩子注意以下几个方面：',
+        'sections': [
+            {
+                'title': '冬季防溺水',
+                'icon': '❄️',
+                'body': '冬季水面结冰，易发生溺水事故。请教育孩子不私自到河边、湖边滑冰、玩耍，并做到"四知道"——知道孩子去哪里、和谁去、做什么、何时回。',
+            },
+            {
+                'title': '居家与消防安全',
+                'icon': '🔥',
+                'body': '<ol class="list-decimal list-inside ml-2 mt-1 space-y-1 text-gray-700 bg-white p-3 rounded border border-red-100"><li>注意用火用电用气安全，定期检查家中电器、燃气管道，做到人走火熄、电断、气关，取暖设备远离易燃物，切勿超负荷用电。</li><li>严禁在楼梯间、疏散通道等公共区域停放电动车或充电，切勿将电池带回家中充电。</li><li>自觉遵守禁放规定，不购买、不燃放烟花爆竹，不携带烟花爆竹进入公共场所，并主动劝阻家人和亲友的燃放行为。</li></ol>',
+            },
+            {
+                'title': '交通安全',
+                'icon': '🚦',
+                'body': '遵守交通规则，过马路走斑马线，不闯红灯，不翻越护栏。未满12周岁不骑自行车上路，未满16周岁不骑电动车。乘坐正规交通工具，佩戴安全头盔，注意铁路安全。',
+            },
+            {
+                'title': '食品安全',
+                'icon': '🥗',
+                'body': '注意饮食卫生，食材要新鲜、煮熟，不食用"三无"食品。外出就餐选择证照齐全的餐馆，避免暴饮暴食。',
+            },
+            {
+                'title': '网络安全',
+                'icon': '🌐',
+                'body': '控制孩子使用电子产品的时间，防范网络沉迷和电信诈骗。教育孩子不轻信陌生信息、不泄露个人信息、不随意转账，文明上网，谨防网络交友风险。',
+            },
+            {
+                'title': '极端天气安全',
+                'icon': '🌪️',
+                'body': '关注天气预报，遇雨雪、冰冻、大风等天气尽量减少外出。外出时注意防滑防摔，远离积雪广告牌、树木等危险区域。',
+            },
+            {
+                'title': '法治与行为安全',
+                'icon': '⚖️',
+                'body': '教育孩子遵纪守法，不进入不宜场所，不接触不良人员。关注孩子心理与行为变化，及时沟通引导，防范欺凌行为。',
+            },
+            {
+                'title': '家庭环境与榜样作用',
+                'icon': '🏠',
+                'body': '家长应以身作则，营造积极健康的家庭氛围，不让孩子接触不良信息与场所，不纵容不良行为。',
+            },
+        ],
+    },
+    'summer': {
+        'name': '夏季暑假版',
+        'icon': '☀️',
+        'title': '假期安全告知书',
+        'intro': '为了让孩子们度过一个平安、健康、愉快的暑假，请各位家长切实承担起监护责任，与学校携手共同守护孩子的假期安全。在此，我们特别提醒您和孩子注意以下几个方面：',
+        'sections': [
+            {
+                'title': '防溺水安全',
+                'icon': '🏊',
+                'body': '夏季是溺水事故高发期，请务必教育孩子做到"六不"：不私自下水游泳，不擅自与他人结伴游泳，不在无家长带领的情况下游泳，不到无安全设施、无救援人员的水域游泳，不到不熟悉的水域游泳，不盲目下水施救。家长要做到"四知道"：知道孩子去哪里、和谁去、做什么、何时回。',
+            },
+            {
+                'title': '防暑降温',
+                'icon': '🌡️',
+                'body': '高温天气尽量减少户外活动，避免在烈日下长时间暴晒。外出时做好防晒措施，多饮水，保持室内通风。如出现头晕、恶心等中暑症状，立即转移到阴凉处并补充水分，情况严重及时就医。',
+            },
+            {
+                'title': '交通安全',
+                'icon': '🚦',
+                'body': '遵守交通规则，过马路走斑马线，不闯红灯，不翻越护栏。未满12周岁不骑自行车上路，未满16周岁不骑电动车。乘坐正规交通工具，佩戴安全头盔，不乘坐超载、无证车辆。',
+            },
+            {
+                'title': '食品安全',
+                'icon': '🥗',
+                'body': '夏季气温高，食物易变质。注意饮食卫生，不食用过期、变质、"三无"食品，少吃生冷食物。外出就餐选择证照齐全的餐馆，避免暴饮暴食。',
+            },
+            {
+                'title': '网络安全',
+                'icon': '🌐',
+                'body': '控制孩子使用电子产品的时间，防范网络沉迷和电信诈骗。教育孩子不轻信陌生信息、不泄露个人信息、不随意转账，文明上网，谨防网络交友风险。',
+            },
+            {
+                'title': '防雷电安全',
+                'icon': '⚡',
+                'body': '夏季雷雨天气频繁，教育孩子雷雨天不在大树下、电线杆旁避雨，不使用手机等电子设备，关闭家中电器并拔掉电源插头。',
+            },
+            {
+                'title': '法治与行为安全',
+                'icon': '⚖️',
+                'body': '教育孩子遵纪守法，不进入不宜场所，不接触不良人员。关注孩子心理与行为变化，及时沟通引导，防范欺凌行为。',
+            },
+            {
+                'title': '家庭环境与榜样作用',
+                'icon': '🏠',
+                'body': '家长应以身作则，营造积极健康的家庭氛围，不让孩子接触不良信息与场所，不纵容不良行为。合理安排孩子作息，保证充足睡眠和适当锻炼。',
+            },
+        ],
+    },
+    'general': {
+        'name': '通用版',
+        'icon': '📋',
+        'title': '假期安全告知书',
+        'intro': '为了让孩子们度过一个平安、健康、愉快的假期，请各位家长切实承担起监护责任，与学校携手共同守护孩子的假期安全。在此，我们特别提醒您和孩子注意以下几个方面：',
+        'sections': [
+            {
+                'title': '防溺水安全',
+                'icon': '🏊',
+                'body': '请教育孩子不私自到河边、池塘、水库等水域玩耍或游泳。家长要做到"四知道"：知道孩子去哪里、和谁去、做什么、何时回。',
+            },
+            {
+                'title': '交通安全',
+                'icon': '🚦',
+                'body': '遵守交通规则，过马路走斑马线，不闯红灯，不翻越护栏。未满12周岁不骑自行车上路，未满16周岁不骑电动车。乘坐正规交通工具，佩戴安全头盔。',
+            },
+            {
+                'title': '居家与消防安全',
+                'icon': '🔥',
+                'body': '注意用火用电用气安全，定期检查家中电器、燃气管道。取暖设备远离易燃物，切勿超负荷用电。严禁在楼梯间等公共区域停放电动车或充电。',
+            },
+            {
+                'title': '食品安全',
+                'icon': '🥗',
+                'body': '注意饮食卫生，食材要新鲜、煮熟，不食用"三无"食品。外出就餐选择证照齐全的餐馆，避免暴饮暴食。',
+            },
+            {
+                'title': '网络安全',
+                'icon': '🌐',
+                'body': '控制孩子使用电子产品的时间，防范网络沉迷和电信诈骗。教育孩子不轻信陌生信息、不泄露个人信息、不随意转账，文明上网。',
+            },
+            {
+                'title': '法治与行为安全',
+                'icon': '⚖️',
+                'body': '教育孩子遵纪守法，不进入不宜场所，不接触不良人员。关注孩子心理与行为变化，及时沟通引导，防范欺凌行为。',
+            },
+            {
+                'title': '家庭环境与榜样作用',
+                'icon': '🏠',
+                'body': '家长应以身作则，营造积极健康的家庭氛围，不让孩子接触不良信息与场所，不纵容不良行为。',
+            },
+        ],
+    },
+}
+
+
+def render_safety_notice_html(template_data):
+    """将模板数据渲染为 HTML 字符串"""
+    sections_html = ''
+    for sec in template_data.get('sections', []):
+        icon = sec.get('icon', '')
+        title = sec.get('title', '')
+        body = sec.get('body', '')
+        sections_html += f"""
+                        <div>
+                            <span class="font-bold text-paper-red text-lg">{icon} {title}：</span>
+                            <span class="text-gray-800">{body}</span>
+                        </div>"""
+
+    return f"""                <div class="mb-6 border-2 border-paper-red rounded p-4 bg-red-50/20">
+                    <div class="text-center mb-4">
+                        <span class="bg-paper-red text-white px-6 py-1 rounded-full font-bold text-lg font-kaiti tracking-widest">{template_data.get('title', '假期安全告知书')}</span>
+                    </div>
+
+                    <p class="font-kaiti text-gray-800 mb-4 indent-8 leading-relaxed text-justify">
+                        {template_data.get('intro', '')}
+                    </p>
+
+                    <div class="space-y-4 font-kaiti text-sm sm:text-base text-gray-700 leading-relaxed">
+                        {sections_html}
+                    </div>
+                </div>"""
+
+
+SAFETY_OPTIMIZE_PROMPT = """你是一位资深的小学德育主任，正在优化《假期安全告知书》。
+
+要求：
+1. 保持告知书的正式、亲切的语调
+2. 语言简洁有力，适合家长阅读
+3. 覆盖以下安全领域：防溺水、交通、消防、食品、网络、极端天气、法治、家庭环境
+4. 如果季节信息明确（寒假/暑假），加入相应的季节性安全提示
+5. 每个安全领域用"标题：内容"的格式输出，标题简洁（6-10字），内容1-2句话
+6. 开头需要一个引导段落（40-60字），表达学校对学生假期安全的关怀
+7. 直接输出纯文本，每段之间用空行隔开，不要输出 markdown 标记
+8. 格式严格按照以下：
+
+【标题】
+假期安全告知书
+【引导段落】
+为了让孩子们度过一个平安……（40-60字）
+【安全条目】（必须至少6条，每条一行）
+防溺水：……
+交通安全：……
+消防安全：……
+食品安全：……
+网络安全：……
+法治与行为安全：……
+家庭环境：……"""
+
+
+def generate_safety_notice(ai_config, season='寒假', current_text=''):
+    """AI 优化安全告知书"""
+    if not ai_config or not ai_config.get('api_key'):
+        return None, 'AI_API_KEY_NOT_CONFIGURED'
+
+    prompt = SAFETY_OPTIMIZE_PROMPT
+    if current_text:
+        prompt += f'\n\n当前版本供参考：\n{current_text[:800]}'
+    else:
+        prompt += f'\n\n请针对{season}生成一份全新的安全告知书。'
+
+    last_error = None
+    for attempt in range(2):
+        try:
+            client = OpenAI(
+                api_key=ai_config['api_key'],
+                base_url=ai_config['base_url'],
+                timeout=90,
+            )
+            response = client.chat.completions.create(
+                model=ai_config['model'],
+                messages=[
+                    {'role': 'system', 'content': prompt},
+                    {'role': 'user', 'content': f'请生成{"优化" if current_text else "一份全新的"}《假期安全告知书》（针对{season}）'}
+                ],
+                max_tokens=1200,
+                temperature=0.8,
+                extra_body={"thinking_mode": "non-thinking"},
+            )
+            content = response.choices[0].message.content
+            if content:
+                return content.strip(), None
+            return None, '模型返回空内容'
+        except RateLimitError:
+            last_error = 'API 请求过于频繁，请稍后重试'
+            if attempt < 1:
+                time.sleep(2)
+        except (APIConnectionError, APITimeoutError):
+            last_error = '无法连接 AI 服务，请检查网络或 API 地址'
+            if attempt < 1:
+                time.sleep(1.5)
+        except APIStatusError as e:
+            return None, f'AI 接口返回错误（状态码 {e.status_code}）：{e.message}'
+        except Exception as e:
+            return None, f'AI 调用异常: {str(e)}'
+
+    return None, last_error

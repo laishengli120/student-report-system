@@ -2,10 +2,11 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>管理员登录</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
@@ -15,40 +16,201 @@
         theme: { extend: { colors: { 'paper-red': { DEFAULT: '#d93025', dark: '#b02318' } } } }
       }
     </script>
+    <style>
+        :root {
+            --paper-red: #d93025;
+            --paper-red-dark: #b02318;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .font-kaiti { font-family: "KaiTi", "STKaiti", "楷体", "Noto Serif SC", serif; }
+        .font-calligraphy { font-family: 'Ma Shan Zheng', cursive; }
+
+        /* ── Login card ── */
+        .login-card {
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            transition: box-shadow 0.3s;
+        }
+        @media (hover: hover) {
+            .login-card:hover { box-shadow: 0 12px 40px rgba(0,0,0,0.12); }
+        }
+
+        /* ── Flash messages: slide in from right ── */
+        .flash-success { background: #f0fdf4; border-left: 4px solid #22c55e; color: #166534; }
+        .flash-error   { background: #fff5f5; border-left: 4px solid var(--paper-red); color: var(--paper-red-dark); }
+
+        @keyframes flashSlideInRight {
+            from { opacity: 0; transform: translateX(60px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        .flash-msg { animation: flashSlideInRight 0.3s ease-out both; }
+
+        /* ── Fade-in on page load ── */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-up { animation: fadeInUp 0.35s ease-out both; }
+
+        /* ── Shake on login failure ── */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 50%, 90% { transform: translateX(-5px); }
+            30%, 70% { transform: translateX(5px); }
+        }
+        .shake { animation: shake 0.5s ease-in-out; }
+
+        /* ── Submit button ── */
+        .btn-login {
+            background: var(--paper-red);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(217,48,37,0.25);
+            transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+        }
+        .btn-login:hover { background: var(--paper-red-dark); }
+        .btn-login:active { transform: scale(0.98); }
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ── Spinner ── */
+        .spinner {
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 2px solid #fff;
+            width: 18px; height: 18px;
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Landscape phone optimization ── */
+        @media (orientation: landscape) and (max-height: 520px) {
+            body {
+                align-items: flex-start;
+                padding-top: 8px;
+            }
+            .login-card {
+                margin: 0 auto;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            }
+        }
+
+        /* ── Very small screens (< 360px) ── */
+        @media (max-width: 359px) {
+            .login-card {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+    </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 border-t-8 border-paper-red">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
-        <h1 class="text-2xl font-bold text-center text-paper-red mb-6 font-serif">管理员登录</h1>
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
+<body class="flex flex-col items-center justify-center min-h-dvh p-3 sm:p-4 md:p-6 border-t-4 sm:border-t-6 md:border-t-8 border-paper-red">
+
+    <!-- ── Flash Messages (above card) ── -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="w-full space-y-2 mb-3 sm:mb-4" id="flash-container" style="max-width: 420px;">
                 {% for category, message in messages %}
-                    <div class="mb-4 p-3 rounded-md text-sm
-                        {% if category == 'error' %} bg-red-100 border-l-4 border-red-500 text-red-700 {% endif %}
-                        {% if category == 'success' %} bg-green-100 border-l-4 border-green-500 text-green-700 {% endif %}"
-                        role="alert">
+                    <div class="flash-msg p-3 sm:p-3.5 rounded-lg text-sm font-kaiti {{ 'flash-success' if category == 'success' else 'flash-error' }}" role="alert">
                         {{ message }}
                     </div>
                 {% endfor %}
-            {% endif %}
-        {% endwith %}
-        <form method="POST" action="{{ url_for('admin_login') }}" class="space-y-5">
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="fade-in-up login-card bg-white p-5 sm:p-8 md:p-9 rounded-xl sm:rounded-2xl shadow-lg w-full my-2 sm:my-0" style="max-width: 420px;">
+
+        <!-- ── Logo / Icon ── -->
+        <div class="text-center mb-5 sm:mb-6">
+            <div class="inline-block border-2 border-paper-red rounded-full p-2.5 sm:p-3 mb-3 sm:mb-4">
+                <svg class="w-8 h-8 sm:w-9 sm:h-9 text-paper-red" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-bold font-kaiti tracking-wider" style="color: var(--paper-red);">管理员登录</h1>
+            <p class="text-gray-400 text-xs sm:text-sm mt-1 sm:mt-1.5 font-kaiti">期末通知书发布系统</p>
+        </div>
+
+        <!-- ── Login Form ── -->
+        <form method="POST" action="{{ url_for('admin_login') }}" class="space-y-4 sm:space-y-5" id="login-form">
             <div>
-                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
-                <input type="text" name="username" id="username" required
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-paper-red focus:ring-1 focus:ring-paper-red transition-colors">
+                <label for="username" class="block text-gray-700 text-xs sm:text-sm font-bold mb-2 font-kaiti">用户名</label>
+                <input type="text" name="username" id="username" required autocomplete="username"
+                       class="w-full text-sm sm:text-base py-2 sm:py-2.5 px-3 sm:px-4 border-b-2 border-gray-300 focus:border-paper-red outline-none bg-gray-50 rounded-t transition-colors font-kaiti"
+                       placeholder="请输入用户名">
             </div>
             <div>
-                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">密码</label>
-                <input type="password" name="password" id="password" required
-                       class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-paper-red focus:ring-1 focus:ring-paper-red transition-colors">
+                <label for="password" class="block text-gray-700 text-xs sm:text-sm font-bold mb-2 font-kaiti">密码</label>
+                <input type="password" name="password" id="password" required autocomplete="current-password"
+                       class="w-full text-sm sm:text-base py-2 sm:py-2.5 px-3 sm:px-4 border-b-2 border-gray-300 focus:border-paper-red outline-none bg-gray-50 rounded-t transition-colors font-kaiti"
+                       placeholder="请输入密码">
             </div>
-            <div>
-                <button type="submit"
-                        class="w-full bg-paper-red hover:bg-paper-red-dark text-white font-semibold py-2.5 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-paper-red transition duration-150 ease-in-out shadow-md">
-                    登录系统
+            <div class="pt-0.5 sm:pt-1">
+                <button type="submit" id="submit-btn"
+                        class="btn-login w-full font-bold py-2.5 sm:py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-paper-red flex items-center justify-center gap-2 font-kaiti text-sm sm:text-base">
+                    <span id="submit-text">登 录 系 统</span>
+                    <div id="btn-spinner" class="spinner hidden"></div>
                 </button>
             </div>
         </form>
+
+        <!-- ── Back to parent query ── -->
+        <div class="mt-5 sm:mt-6 text-center">
+            <a href="{{ url_for('parent_query_page') }}" class="text-xs sm:text-sm text-gray-400 hover:text-gray-500 transition-colors font-kaiti">
+                &larr; 返回家长查询页面
+            </a>
+        </div>
     </div>
+
+<script>
+(function() {
+    // ── Form submit: loading state ──
+    var form = document.getElementById('login-form');
+    var submitBtn = document.getElementById('submit-btn');
+    var submitText = document.getElementById('submit-text');
+    var btnSpinner = document.getElementById('btn-spinner');
+
+    form.addEventListener('submit', function() {
+        var username = document.getElementById('username').value.trim();
+        var password = document.getElementById('password').value.trim();
+        if (!username || !password) return;
+
+        submitBtn.disabled = true;
+        submitText.textContent = '登录中…';
+        btnSpinner.classList.remove('hidden');
+    });
+
+    // ── Flash auto-dismiss (slide back to right) ──
+    var flashContainer = document.getElementById('flash-container');
+    if (flashContainer) {
+        var msgs = flashContainer.querySelectorAll('.flash-msg');
+        msgs.forEach(function(msg, i) {
+            setTimeout(function() {
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateX(60px)';
+                msg.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                setTimeout(function() { if (msg.parentNode) msg.remove(); }, 250);
+            }, 3000 + i * 500);
+        });
+    }
+
+    // ── Shake card when login fails (error flash present) ──
+    if (flashContainer && flashContainer.querySelector('.flash-error')) {
+        var card = document.querySelector('.login-card');
+        card.classList.add('shake');
+        card.addEventListener('animationend', function() {
+            card.classList.remove('shake');
+        }, { once: true });
+    }
+})();
+</script>
 </body>
 </html>
